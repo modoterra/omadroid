@@ -21,6 +21,8 @@ class GridMenu(
 
     init {
         isFillViewport = true
+        overScrollMode = OVER_SCROLL_NEVER
+        isNestedScrollingEnabled = false
         addView(
             column,
             ViewGroup.LayoutParams(

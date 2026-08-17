@@ -30,6 +30,7 @@ class GridSheet(
         orientation = VERTICAL
         setBackgroundColor(style.colors.background)
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        overScrollMode = OVER_SCROLL_NEVER
         visibility = GONE
         val header =
             GridRow(context, style).apply {

@@ -9,5 +9,6 @@
         <item name="android:colorBackground">@color/home_background</item>
         <item name="android:fontFamily">@font/jetbrains_mono_nerd</item>
         <item name="android:typeface">normal</item>
+        <item name="android:overScrollMode">never</item>
     </style>
 </resources>
