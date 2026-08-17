@@ -43,4 +43,11 @@ class MenuSpecTest {
         assertEquals(true, menuRows(next).first { it.id == "focus" }.toggled)
         assertEquals(true, menuRows(next).first { it.id == "sound" }.toggled)
     }
+
+    @Test
+    fun selectedIsNotAToggle() {
+        val item = MenuItem("tokyo-night", "Tokyo Night", selected = true)
+        assertEquals(true, item.selected)
+        assertEquals(null, item.toggled)
+    }
 }

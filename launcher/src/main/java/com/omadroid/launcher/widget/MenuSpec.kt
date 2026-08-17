@@ -5,6 +5,7 @@ data class MenuItem(
     val title: String,
     val icon: String? = null,
     val toggled: Boolean? = null,
+    val selected: Boolean = false,
 )
 
 data class MenuSection(

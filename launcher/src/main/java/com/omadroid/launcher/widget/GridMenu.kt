@@ -104,20 +104,32 @@ class GridMenuRow(
                 marginStart = style.spacePx
             },
         )
-        val toggled = item.toggled
-        if (toggled != null) {
-            val toggle =
-                GridIcon(context, style).apply {
-                    text = if (toggled) IconGlyphs.TOGGLE_ON else IconGlyphs.TOGGLE_OFF
-                    tint(if (toggled) style.colors.accent else style.colors.muted)
-                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                }
-            addView(
-                toggle,
-                LinearLayout.LayoutParams(style.innerPx, style.innerPx).apply {
-                    marginStart = style.spacePx
-                },
-            )
+        when {
+            item.toggled != null -> {
+                val on = item.toggled == true
+                addView(
+                    GridIcon(context, style).apply {
+                        text = if (on) IconGlyphs.TOGGLE_ON else IconGlyphs.TOGGLE_OFF
+                        tint(if (on) style.colors.accent else style.colors.muted)
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    },
+                    LinearLayout.LayoutParams(style.innerPx, style.innerPx).apply {
+                        marginStart = style.spacePx
+                    },
+                )
+            }
+            item.selected -> {
+                addView(
+                    GridIcon(context, style).apply {
+                        text = IconGlyphs.CHECK
+                        tint(style.colors.accent)
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    },
+                    LinearLayout.LayoutParams(style.innerPx, style.innerPx).apply {
+                        marginStart = style.spacePx
+                    },
+                )
+            }
         }
     }
 }

@@ -77,6 +77,16 @@ class GridSheet(
         onChanged(stack)
     }
 
+    fun restore(next: NavStack) {
+        animate().cancel()
+        stack = next
+        bind()
+        translationX = 0f
+        translationY = 0f
+        visibility = VISIBLE
+        onChanged(stack)
+    }
+
     fun push(route: NavRoute) {
         if (!stack.isOpen) {
             show(route)

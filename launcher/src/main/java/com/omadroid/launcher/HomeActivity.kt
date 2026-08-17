@@ -574,7 +574,7 @@ class HomeActivity : Activity() {
                                     id = slug,
                                     title = ThemeCatalog.displayName(slug),
                                     icon = IconGlyphs.PALETTE,
-                                    toggled = slug == theme.slug,
+                                    selected = slug == theme.slug,
                                 )
                             },
                         ),
@@ -583,7 +583,6 @@ class HomeActivity : Activity() {
             )
         }
         menu.onItemClick = { item -> activateTheme(item.id) }
-        menu.onItemToggle = { item, _ -> activateTheme(item.id) }
         paint()
         return menu
     }
@@ -599,6 +598,9 @@ class HomeActivity : Activity() {
     }
 
     private fun activateTheme(slug: String) {
+        if (slug == theme.slug) {
+            return
+        }
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putString(PREF_THEME, slug).apply()
         theme = ThemeCatalog.load(assets, slug)
         style = GridStyle(unitPx, theme)
@@ -607,8 +609,7 @@ class HomeActivity : Activity() {
         bindLayoutButton()
         bindBar()
         bindWorkspaces()
-        sheet.show(menuRoute())
-        sheet.push(themeRoute())
+        sheet.restore(NavStack.root(menuRoute()).push(themeRoute()))
     }
 
     private fun launchableApps(): List<LaunchableApp> {

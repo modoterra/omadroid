@@ -48,6 +48,7 @@ object IconGlyphs {
     const val BACK = "\uF053"
     const val APP = "\uF1B2"
     const val PALETTE = "\uF53F"
+    const val CHECK = "\uF00C"
     const val TOGGLE_ON = "\uF205"
     const val TOGGLE_OFF = "\uF204"
     const val OMARCHY = "\uE900"
