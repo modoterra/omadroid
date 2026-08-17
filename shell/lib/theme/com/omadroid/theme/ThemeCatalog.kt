@@ -2,8 +2,15 @@ package com.omadroid.theme
 
 import android.content.res.AssetManager
 import java.io.IOException
+import java.util.Locale
 
 object ThemeCatalog {
+    fun displayName(slug: String): String =
+        slug.split('-', '_').filter { it.isNotEmpty() }.joinToString(" ") { part ->
+            part.replaceFirstChar { ch ->
+                if (ch.isLowerCase()) ch.titlecase(Locale.US) else ch.toString()
+            }
+        }
     fun load(assets: AssetManager, slug: String = ThemeColors.DEFAULT_SLUG): ThemeColors {
         val path = "$slug/colors.toml"
         val text = try {

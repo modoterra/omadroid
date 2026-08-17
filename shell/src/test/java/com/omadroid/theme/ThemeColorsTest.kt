@@ -43,6 +43,12 @@ class ThemeColorsTest {
     }
 
     @Test
+    fun displayNameTitleCasesSlug() {
+        assertEquals("Tokyo Night", ThemeCatalog.displayName("tokyo-night"))
+        assertEquals("Catppuccin Latte", ThemeCatalog.displayName("catppuccin-latte"))
+    }
+
+    @Test
     fun rejectsMissingBackground() {
         assertThrows(ThemeColorsException::class.java) {
             ThemeColors.parse("broken", """mode = "dark"\nforeground = "#ffffff"\n""")

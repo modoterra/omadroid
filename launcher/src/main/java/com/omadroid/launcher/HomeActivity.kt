@@ -48,6 +48,7 @@ class HomeActivity : Activity() {
     private lateinit var launcherApps: LauncherApps
     private lateinit var theme: ThemeColors
     private lateinit var style: GridStyle
+    private var unitPx: Int = 0
     private lateinit var grid: GridMetrics
     private lateinit var slots: Map<BuiltinModule, AllocatedSpace>
     private lateinit var layoutButton: GridIconButton
@@ -72,7 +73,7 @@ class HomeActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         launcherApps = getSystemService(LauncherApps::class.java)
-        theme = ThemeCatalog.load(assets)
+        theme = loadSavedTheme()
         if (savedInstanceState != null) {
             layout = LauncherLayout.valueOf(
                 savedInstanceState.getString(STATE_LAYOUT, LauncherLayout.Desktop.name),
@@ -82,7 +83,7 @@ class HomeActivity : Activity() {
             )
         }
         window.decorView.setBackgroundColor(theme.background)
-        val unitPx = unitLengthPx(resources.displayMetrics.density)
+        unitPx = unitLengthPx(resources.displayMetrics.density)
         style = GridStyle(unitPx, theme)
         grid =
             measureGrid(
@@ -418,6 +419,7 @@ class HomeActivity : Activity() {
         return when (route.id) {
             ROUTE_SEARCH -> buildSearchPage()
             ROUTE_MENU -> buildMenuPage()
+            ROUTE_THEME -> buildThemePage()
             else ->
                 GridText(this, style).apply {
                     text = route.title
@@ -498,15 +500,20 @@ class HomeActivity : Activity() {
             }
         }
         menu.onItemClick = { item ->
-            val parts = item.id.split('/', limit = 2)
-            if (parts.size == 2) {
-                launcherApps.startMainActivity(
-                    ComponentName(parts[0], parts[1]),
-                    user,
-                    null,
-                    null,
-                )
-                sheet.dismiss()
+            when {
+                item.id == ROUTE_THEME -> sheet.push(themeRoute())
+                else -> {
+                    val parts = item.id.split('/', limit = 2)
+                    if (parts.size == 2) {
+                        launcherApps.startMainActivity(
+                            ComponentName(parts[0], parts[1]),
+                            user,
+                            null,
+                            null,
+                        )
+                        sheet.dismiss()
+                    }
+                }
             }
         }
         paint()
@@ -525,6 +532,16 @@ class HomeActivity : Activity() {
         return MenuSpec(
             listOf(
                 MenuSection(
+                    getString(R.string.sheet_appearance),
+                    listOf(
+                        MenuItem(
+                            id = ROUTE_THEME,
+                            title = getString(R.string.sheet_theme),
+                            icon = IconGlyphs.PALETTE,
+                        ),
+                    ),
+                ),
+                MenuSection(
                     getString(R.string.launcher_layout),
                     listOf(
                         MenuItem(
@@ -538,6 +555,60 @@ class HomeActivity : Activity() {
                 MenuSection(getString(R.string.sheet_apps), apps),
             ),
         )
+    }
+
+    private fun themeRoute(): NavRoute =
+        NavRoute(ROUTE_THEME, getString(R.string.sheet_theme))
+
+    private fun buildThemePage(): View {
+        val menu = GridMenu(this, style)
+        fun paint() {
+            val slugs = ThemeCatalog.slugs(assets)
+            menu.bind(
+                MenuSpec(
+                    listOf(
+                        MenuSection(
+                            getString(R.string.sheet_theme),
+                            slugs.map { slug ->
+                                MenuItem(
+                                    id = slug,
+                                    title = ThemeCatalog.displayName(slug),
+                                    icon = IconGlyphs.PALETTE,
+                                    toggled = slug == theme.slug,
+                                )
+                            },
+                        ),
+                    ),
+                ),
+            )
+        }
+        menu.onItemClick = { item -> activateTheme(item.id) }
+        menu.onItemToggle = { item, _ -> activateTheme(item.id) }
+        paint()
+        return menu
+    }
+
+    private fun loadSavedTheme(): ThemeColors {
+        val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
+        val slug = prefs.getString(PREF_THEME, ThemeColors.DEFAULT_SLUG) ?: ThemeColors.DEFAULT_SLUG
+        return try {
+            ThemeCatalog.load(assets, slug)
+        } catch (_: com.omadroid.theme.ThemeColorsException) {
+            ThemeCatalog.load(assets, ThemeColors.DEFAULT_SLUG)
+        }
+    }
+
+    private fun activateTheme(slug: String) {
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit().putString(PREF_THEME, slug).apply()
+        theme = ThemeCatalog.load(assets, slug)
+        style = GridStyle(unitPx, theme)
+        window.decorView.setBackgroundColor(theme.background)
+        setContentView(buildChrome())
+        bindLayoutButton()
+        bindBar()
+        bindWorkspaces()
+        sheet.show(menuRoute())
+        sheet.push(themeRoute())
     }
 
     private fun launchableApps(): List<LaunchableApp> {
@@ -600,6 +671,9 @@ class HomeActivity : Activity() {
         private const val STATE_WORKSPACE = "workspace"
         private const val ROUTE_SEARCH = "search"
         private const val ROUTE_MENU = "menu"
+        private const val ROUTE_THEME = "theme"
         private const val ITEM_FOCUS = "focus"
+        private const val PREFS = "omadroid"
+        private const val PREF_THEME = "theme_slug"
     }
 }
