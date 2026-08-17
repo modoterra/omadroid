@@ -6,4 +6,5 @@
     <string name="launcher_menu">Menu</string>
     <string name="launcher_layout_desktop">Desktop layout</string>
     <string name="launcher_layout_focus">Focus layout</string>
+    <string name="bar_name">Bar</string>
 </resources>
