@@ -58,7 +58,13 @@ Boot the built product image instead of the workbench AVD:
 ./scripts/start.sh --product --aosp /path/to/aosp
 ```
 
-`-writable-system` on this goldfish/`super.img` boot hangs at a grey screen. Until that is fixed, product app changes still need `m` and a guest restart.
+After `m OmadroidLauncher` or `m OmadroidShell`, push without rebuilding `super.img`:
+
+```bash
+./scripts/sync-product.sh --aosp /path/to/aosp
+```
+
+That mounts a tmpfs overlay on `/system_ext` (verity stays on). The overlay lasts until the guest reboots. Do not pass `-writable-system`; it greys this goldfish boot.
 
 Windowed boots use `-fixed-scale` so the guest is 1:1 device pixels. Auto-scale on a HiDPI or XWayland host either shrinks the phone to a postage stamp or leaves a tiled window mostly empty.
 

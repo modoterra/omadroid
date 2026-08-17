@@ -205,6 +205,33 @@ omadroid_product_out() {
   printf '%s\n' "${aosp_root}/out/target/product/$(omadroid_product_device)"
 }
 
+# qcow overlays from -writable-system. A bad overlay greys the guest.
+omadroid_clean_product_overlays() {
+  local product_out="${1:-}"
+  local data_dir="${2:-}"
+  [[ -n "$product_out" ]] || omadroid_die "product-out required"
+  rm -f "${product_out}/"*.qcow2
+  if [[ -n "$data_dir" ]]; then
+    rm -f "${data_dir}/"*.qcow2
+  fi
+}
+
+# Wait until sys.boot_completed=1. Does not use wait-for-device (offline hangs).
+omadroid_wait_for_boot() {
+  local adb="${1:-}"
+  local tries="${2:-60}"
+  [[ -n "$adb" ]] || omadroid_die "adb required"
+  local i boot
+  for i in $(seq 1 "$tries"); do
+    boot="$("$adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" || boot=""
+    if [[ "$boot" == 1 ]]; then
+      return 0
+    fi
+    sleep 2
+  done
+  return 1
+}
+
 # Concatenate generic ramdisk (/init) and vendor_ramdisk (fstab.ranchu).
 # The kernel accepts stacked uncompressed cpio archives as one initramfs.
 omadroid_merge_product_ramdisk() {

@@ -142,6 +142,17 @@ assert_eq "product-out path is under the AOSP tree" \
   "/mnt/data/aosp/out/target/product/emu64x" \
   "$(omadroid_product_out /mnt/data/aosp)"
 
+OVERLAY_DIR="$(mktemp -d)"
+touch "${OVERLAY_DIR}/system-qemu.img.qcow2" "${OVERLAY_DIR}/userdata.qcow2"
+omadroid_clean_product_overlays "$OVERLAY_DIR" "$OVERLAY_DIR"
+if [[ -e "${OVERLAY_DIR}/system-qemu.img.qcow2" ]]; then
+  printf 'not ok  clean product overlays removes qcow2\n' >&2
+  FAILS=$((FAILS + 1))
+else
+  printf 'ok  clean product overlays removes qcow2\n'
+fi
+rm -rf "$OVERLAY_DIR"
+
 PRODUCT_ARGS_DIR="$(mktemp -d)"
 touch "${PRODUCT_ARGS_DIR}/system.img"
 assert_eq "product start uses sysdir without forcing kernel" \

@@ -8,6 +8,8 @@ source "$ROOT/scripts/lib.sh"
 AVD_NAME="omadroid"
 HEADLESS=0
 PRODUCT=0
+WRITABLE=0
+CLEAN_OVERLAYS=0
 AOSP_ROOT="${AOSP_ROOT:-}"
 EXTRA_ARGS=()
 
@@ -17,13 +19,15 @@ Start the local AOSP emulator.
 
 Usage:
   start.sh [--headless] [--] [emulator-args...]
-  start.sh --product [--aosp <aosp-root>] [--headless] [--] [emulator-args...]
+  start.sh --product [--aosp <aosp-root>] [--writable] [--clean-overlays] [--headless] [--] [emulator-args...]
 
 Options:
-  --product    Boot the built omadroid_x86_64 image (not the workbench AVD)
-  --aosp DIR   AOSP tree that holds out/target/product/emu64x
-  --headless   Boot without a window (-no-window -no-audio)
-  -h, --help   Show this help
+  --product         Boot the built omadroid_x86_64 image (not the workbench AVD)
+  --aosp DIR        AOSP tree that holds out/target/product/emu64x
+  --writable        Pass -writable-system so adb remount can succeed
+  --clean-overlays  Delete leftover qcow overlays before a writable boot
+  --headless        Boot without a window (-no-window -no-audio)
+  -h, --help        Show this help
 
 Windowed boots pass -fixed-scale (1:1 guest pixels).
 The workbench emulator binary and AVD live under this repo (sdk/, avd/).
@@ -39,6 +43,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --product)
       PRODUCT=1
+      shift
+      ;;
+    --writable)
+      WRITABLE=1
+      shift
+      ;;
+    --clean-overlays)
+      CLEAN_OVERLAYS=1
       shift
       ;;
     --aosp)
@@ -97,6 +109,12 @@ if [[ "$PRODUCT" == 1 ]]; then
   fi
   product_ramdisk="${product_data_dir}/initrd.img"
   omadroid_merge_product_ramdisk "$PRODUCT_OUT" "$product_ramdisk"
+  if [[ "$CLEAN_OVERLAYS" == 1 ]]; then
+    omadroid_clean_product_overlays "$PRODUCT_OUT" "$product_data_dir"
+  fi
+  if [[ "$WRITABLE" == 1 ]]; then
+    EXTRA_ARGS+=(-writable-system)
+  fi
   if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
     mapfile -t ARGS < <(omadroid_product_emulator_args "$PRODUCT_OUT" "$HEADLESS" \
       -datadir "$product_data_dir" -data "$product_data_img" \

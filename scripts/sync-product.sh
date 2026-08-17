@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Push Soong-built first-party APKs onto a running product guest.
-# Needs -writable-system. That flag hangs this goldfish/super boot
-# (grey screen, no bootanim). Do not use until that is fixed.
+# Uses a tmpfs overlay on /system_ext so we do not need -writable-system
+# or disable-verity (those hang this goldfish/super boot).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -18,8 +18,8 @@ Usage:
   sync-product.sh --aosp <aosp-root>
   AOSP_ROOT=<aosp-root> sync-product.sh
 
-The guest must have been started with -writable-system. First run disables
-verity and reboots the guest.
+After m OmadroidLauncher (or OmadroidShell), run this instead of rebuilding
+super.img. The overlay lasts until the guest reboots.
 EOF
 }
 
@@ -53,25 +53,20 @@ shell_apk="${PRODUCT_OUT}/system_ext/priv-app/OmadroidShell/OmadroidShell.apk"
 [[ -f "$launcher_apk" ]] || omadroid_die "missing ${launcher_apk}; build OmadroidLauncher first"
 [[ -f "$shell_apk" ]] || omadroid_die "missing ${shell_apk}; build OmadroidShell first"
 
-"$ADB" wait-for-device
-"$ADB" root >/dev/null
-"$ADB" wait-for-device
+if ! omadroid_wait_for_boot "$ADB" 60; then
+  omadroid_die "guest never reached boot_completed"
+fi
 
-if ! "$ADB" remount >/dev/null 2>&1; then
-  printf 'omadroid: disabling verity (guest will reboot once)\n'
-  "$ADB" disable-verity
-  "$ADB" reboot
-  "$ADB" wait-for-device
-  for _ in $(seq 1 90); do
-    boot="$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
-    if [[ "$boot" == 1 ]]; then
-      break
-    fi
-    sleep 2
-  done
-  "$ADB" root >/dev/null
-  "$ADB" wait-for-device
-  "$ADB" remount
+"$ADB" root >/dev/null
+if ! omadroid_wait_for_boot "$ADB" 30; then
+  omadroid_die "guest dropped off after adb root"
+fi
+
+if ! "$ADB" shell mount </dev/null | grep -q 'overlay on /system_ext '; then
+  if ! "$ADB" shell </dev/null 'mkdir -p /mnt/scratch && mount -t tmpfs -o mode=0755 tmpfs /mnt/scratch && mkdir -p /mnt/scratch/system_ext/upper /mnt/scratch/system_ext/work && mount -t overlay overlay -o lowerdir=/system_ext,upperdir=/mnt/scratch/system_ext/upper,workdir=/mnt/scratch/system_ext/work /system_ext'
+  then
+    omadroid_die "could not overlay /system_ext"
+  fi
 fi
 
 "$ADB" push "$launcher_apk" /system_ext/priv-app/OmadroidLauncher/OmadroidLauncher.apk
