@@ -62,7 +62,7 @@ class GridIcon(context: Context, style: GridStyle) : TextView(context) {
     init {
         typeface = IconFonts.ui(context)
         setTextColor(style.colors.foreground)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.innerPx.toFloat())
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.iconPx.toFloat())
         includeFontPadding = false
         gravity = Gravity.CENTER
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
@@ -76,7 +76,7 @@ class GridIconButton(context: Context, style: GridStyle) : TextView(context) {
     init {
         typeface = IconFonts.ui(context)
         setTextColor(style.colors.foreground)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.innerPx.toFloat())
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.iconPx.toFloat())
         includeFontPadding = false
         gravity = Gravity.CENTER
         setBackgroundColor(0)

@@ -15,6 +15,7 @@ class GridStyleTest {
         assertEquals(style.innerPx + 2 * style.spacePx, style.cellPx)
         assertEquals(0f, style.cornerPx)
         assertTrue(style.textSizePx <= style.innerPx)
+        assertEquals(style.textSizePx, style.iconPx)
     }
 
     @Test

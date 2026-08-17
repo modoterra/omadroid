@@ -11,7 +11,7 @@ data class GridStyle(
     /** Same length for every pad and margin. */
     val spacePx: Int = (unitPx / 8).coerceAtLeast(1)
     val innerPx: Int = (unitPx - 2 * spacePx).coerceAtLeast(1)
-    val iconPx: Int = innerPx
     val textSizePx: Int = (unitPx * 14 / UNIT_DP).coerceAtLeast(1)
+    val iconPx: Int = textSizePx
     val cornerPx: Float = 0f
 }
