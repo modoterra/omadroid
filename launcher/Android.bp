@@ -7,7 +7,10 @@ android_app {
     name: "OmadroidLauncher",
     srcs: ["src/main/java/**/*.kt"],
     resource_dirs: ["src/main/res"],
-    asset_dirs: ["themes"],
+    asset_dirs: [
+        "themes",
+        "src/main/assets",
+    ],
     static_libs: ["OmadroidTheme"],
     manifest: "src/main/AndroidManifest.xml",
     platform_apis: true,

@@ -9,7 +9,6 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -34,6 +33,7 @@ class GridRow(context: Context, style: GridStyle) : LinearLayout(context) {
 
 class GridText(context: Context, style: GridStyle) : TextView(context) {
     init {
+        typeface = IconFonts.ui(context)
         setTextColor(style.colors.foreground)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, style.textSizePx.toFloat())
         includeFontPadding = false
@@ -46,6 +46,7 @@ class GridText(context: Context, style: GridStyle) : TextView(context) {
 
 class GridButton(context: Context, style: GridStyle) : TextView(context) {
     init {
+        typeface = IconFonts.ui(context)
         setTextColor(style.colors.foreground)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, style.textSizePx.toFloat())
         includeFontPadding = false
@@ -57,31 +58,38 @@ class GridButton(context: Context, style: GridStyle) : TextView(context) {
     }
 }
 
-class GridIcon(context: Context, style: GridStyle) : ImageView(context) {
+class GridIcon(context: Context, style: GridStyle) : TextView(context) {
     init {
-        imageTintList = ColorStateList.valueOf(style.colors.foreground)
+        typeface = IconFonts.ui(context)
+        setTextColor(style.colors.foreground)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.innerPx.toFloat())
+        includeFontPadding = false
+        gravity = Gravity.CENTER
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
-        minimumWidth = style.innerPx
-        minimumHeight = style.innerPx
-        scaleType = ScaleType.FIT_CENTER
-        setPadding(style.spacePx, style.spacePx, style.spacePx, style.spacePx)
+        minWidth = style.innerPx
+        minHeight = style.innerPx
+        setPadding(0, 0, 0, 0)
     }
 }
 
-class GridIconButton(context: Context, style: GridStyle) : ImageButton(context) {
+class GridIconButton(context: Context, style: GridStyle) : TextView(context) {
     init {
-        imageTintList = ColorStateList.valueOf(style.colors.foreground)
+        typeface = IconFonts.ui(context)
+        setTextColor(style.colors.foreground)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.innerPx.toFloat())
+        includeFontPadding = false
+        gravity = Gravity.CENTER
         setBackgroundColor(0)
-        minimumWidth = style.innerPx
-        minimumHeight = style.innerPx
+        minWidth = style.innerPx
+        minHeight = style.innerPx
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
-        scaleType = ScaleType.FIT_CENTER
-        setPadding(style.spacePx, style.spacePx, style.spacePx, style.spacePx)
+        setPadding(0, 0, 0, 0)
     }
 }
 
 class GridField(context: Context, style: GridStyle) : EditText(context, null, 0) {
     init {
+        typeface = IconFonts.ui(context)
         setHintTextColor(style.colors.muted)
         setTextColor(style.colors.foreground)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, style.textSizePx.toFloat())

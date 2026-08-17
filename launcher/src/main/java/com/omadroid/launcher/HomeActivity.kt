@@ -30,6 +30,7 @@ import com.omadroid.launcher.widget.GridIconButton
 import com.omadroid.launcher.widget.GridRow
 import com.omadroid.launcher.widget.GridStyle
 import com.omadroid.launcher.widget.GridText
+import com.omadroid.launcher.widget.IconGlyphs
 import com.omadroid.launcher.widget.gridCellParams
 import com.omadroid.launcher.widget.gridIconParams
 import com.omadroid.launcher.widget.gridStretchParams
@@ -211,7 +212,7 @@ class HomeActivity : Activity() {
             BarModule.Wifi -> {
                 wifiIcon =
                     GridIcon(this, style).apply {
-                        setImageResource(R.drawable.ic_wifi)
+                        text = IconGlyphs.WIFI
                     }
                 LinearLayout(this).apply {
                     gravity = Gravity.CENTER_VERTICAL
@@ -221,7 +222,7 @@ class HomeActivity : Activity() {
             BarModule.Battery -> {
                 batteryIcon =
                     GridIcon(this, style).apply {
-                        setImageResource(R.drawable.ic_battery)
+                        text = IconGlyphs.BATTERY_FULL
                         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                     }
                 batteryView = GridText(this, style)
@@ -278,6 +279,7 @@ class HomeActivity : Activity() {
                 }
             batteryView.tint(batteryColor)
             if (::batteryIcon.isInitialized) {
+                batteryIcon.text = IconGlyphs.battery(status.batteryPercent, status.charging)
                 batteryIcon.tint(batteryColor)
             }
         }
@@ -327,10 +329,10 @@ class HomeActivity : Activity() {
         dock.addView(field, gridStretchParams(style))
         layoutButton =
             GridIconButton(this, style).apply {
-                setImageResource(R.drawable.ic_layout)
+                text = IconGlyphs.LAYOUT
                 contentDescription = getString(R.string.launcher_layout)
                 setOnClickListener {
-                    layout = layout.next()
+                    this@HomeActivity.layout = this@HomeActivity.layout.next()
                     bindLayoutButton()
                     bindWorkspaces()
                 }
@@ -338,7 +340,7 @@ class HomeActivity : Activity() {
         dock.addView(layoutButton, gridCellParams(style))
         val menuButton =
             GridIconButton(this, style).apply {
-                setImageResource(R.drawable.ic_menu)
+                text = IconGlyphs.MENU
                 contentDescription = getString(R.string.launcher_menu)
                 setOnClickListener { button -> showAppMenu(button) }
             }
