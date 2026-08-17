@@ -44,6 +44,10 @@ AOSP_ROOT="$(cd "$AOSP_ROOT" && pwd)"
 export OUT_DIR="${OUT_DIR:-${AOSP_ROOT}/out}"
 # Siso's @config//main.star loader is broken on this host; use ninja.
 export SOONG_NINJA="${SOONG_NINJA:-ninja}"
+# Clippy on aconfig fails depfile_verifier when OUT_DIR is absolute.
+export SOONG_DISABLE_CLIPPY="${SOONG_DISABLE_CLIPPY:-true}"
+# Reuse the last Soong analysis after Android.bp edits.
+export SOONG_INCREMENTAL_ANALYSIS="${SOONG_INCREMENTAL_ANALYSIS:-true}"
 
 cd "$AOSP_ROOT"
 # shellcheck disable=SC1091

@@ -17,6 +17,7 @@ Stock AOSP only: no Play Store, no Play services.
 - `./scripts/strip.sh` disables stock product apps for user 0 on the workbench image.
 - `./scripts/install-launcher.sh` builds `com.omadroid.launcher`, strips product apps, sets HOME, and disables Launcher3.
 - `./scripts/prepare-aosp.sh --aosp <tree>` links this repo into an AOSP checkout for `lunch omadroid_x86_64-aosp_current-userdebug`.
+- `./scripts/build-image.sh --aosp <tree>` lunches and runs `m` with `SOONG_INCREMENTAL_ANALYSIS=true`.
 - `./tests/lib.test.sh` runs parser tests. It does not download the SDK or AOSP.
 - `cd launcher && ./gradlew testDebugUnitTest` runs launcher unit tests.
 - `cd shell && ./gradlew testDebugUnitTest` runs host plugin-registry tests.

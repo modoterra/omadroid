@@ -24,10 +24,15 @@ repo sync -c -j8
 Then in the AOSP tree:
 
 ```bash
+export SOONG_NINJA=ninja
+export SOONG_DISABLE_CLIPPY=true
+export SOONG_INCREMENTAL_ANALYSIS=true
 source build/envsetup.sh
 lunch omadroid_x86_64-aosp_current-userdebug
 m
 ```
+
+`build-image.sh` sets those three. Incremental analysis is what the Soong footer means by faster rebuilds after Android.bp edits.
 
 `prepare-aosp.sh` links this repo to `vendor/modoterra/omadroid` and `device/modoterra/omadroid`. It also applies `device/patches/soong-skip-absolute-host-paths-in-test-package.patch` so Soong can package tests when `OUT_DIR` is absolute. First-party plugins live in `shell/plugins/`. To have `repo sync` place the checkout itself, copy `device/local_manifests/omadroid.xml` into `<aosp>/.repo/local_manifests/`.
 
