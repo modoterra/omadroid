@@ -167,9 +167,13 @@ assert_fail "strip list does not include SystemUI" \
 assert_fail "strip list does not include Settings" \
   grep -Fxq 'com.android.settings' <<<"$STRIP"
 
-assert_eq "HOME package is the Omadroid launcher" \
-  "com.omadroid.launcher" \
+assert_eq "HOME package is omadroid-shell" \
+  "com.omadroid.shell" \
   "$(omadroid_home_package)"
+
+assert_eq "home plugin package is the launcher" \
+  "com.omadroid.launcher" \
+  "$(omadroid_home_plugin_package)"
 
 assert_eq "product name is omadroid_x86_64" \
   "omadroid_x86_64" \

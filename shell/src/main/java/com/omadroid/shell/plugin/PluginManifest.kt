@@ -14,6 +14,8 @@ data class PluginManifest(
     val entryPoints: Map<String, String>,
     val soongModule: String,
 ) {
+    fun entryPoint(kind: String): String? = entryPoints[kind]
+
     companion object {
         const val FIRST_PARTY_PREFIX = "omadroid."
         const val SUPPORTED_SCHEMA = 1

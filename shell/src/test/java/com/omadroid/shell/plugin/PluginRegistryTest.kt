@@ -12,6 +12,10 @@ class PluginRegistryTest {
 
         assertEquals("omadroid.home", registry.plugin("omadroid.home")?.id)
         assertEquals("omadroid.home", registry.holder("home")?.id)
+        assertEquals(
+            "com.omadroid.launcher/.HomeActivity",
+            registry.holder("home")?.entryPoint("home"),
+        )
         assertNull(registry.holder("status"))
     }
 

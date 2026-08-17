@@ -10,7 +10,7 @@ This machine already runs Omarchy.
 
 ## Product image
 
-The product is `omadroid_x86_64`. It inherits the generic goldfish/ranchu phone ([sdk_phone64_x86_64](https://android.googlesource.com/device/generic/goldfish/+/refs/heads/main/64bitonly/product/sdk_phone64_x86_64.mk)), omits the stock `/product` apps and Launcher3, and installs `OmadroidLauncher` (`omadroid.home`) as HOME.
+The product is `omadroid_x86_64`. It inherits the generic goldfish/ranchu phone ([sdk_phone64_x86_64](https://android.googlesource.com/device/generic/goldfish/+/refs/heads/main/64bitonly/product/sdk_phone64_x86_64.mk)), omits the stock `/product` apps and Launcher3, and installs `omadroid-shell` as HOME. The `omadroid.home` plugin (`OmadroidLauncher`) is the home UI.
 
 AOSP stays a local `repo sync` ([download](https://source.android.com/docs/setup/download), [build](https://source.android.com/docs/setup/build/building)). Do not vendor that tree here.
 
@@ -98,7 +98,7 @@ After the emulator window appears, from another terminal:
 | --- | --- |
 | `device/` | lunch product, overlay, privapp allowlist |
 | `omadroid.mk` | `PRODUCT_PACKAGES` add/remove |
-| `shell/` | host process `omadroid-shell` (plugin registry; not HOME) |
+| `shell/` | host process `omadroid-shell` (HOME; loads plugins) |
 | `shell/plugins/` | first-party plugins (`omadroid.home`, …) |
 | `launcher/` | HOME app sources (Gradle workbench + Soong `OmadroidLauncher`) |
 | `scripts/prepare-aosp.sh` | link this repo into an AOSP checkout |

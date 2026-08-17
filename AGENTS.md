@@ -4,7 +4,7 @@ Omadroid is an Omarchy-inspired OS on Android, for Omarchy. See [basecamp/omarch
 
 This repository is the source of the product image and of every first-party plugin. AOSP is an external checkout, not vendored here.
 
-The host process is `omadroid-shell` (`com.omadroid.shell`, Soong `OmadroidShell`). It loads first-party plugin manifests and resolves kinds. It is not HOME yet. `OmadroidLauncher` (`omadroid.home`) remains the product HOME app.
+The host process is `omadroid-shell` (`com.omadroid.shell`, Soong `OmadroidShell`). It is the product HOME app. It loads first-party plugin manifests and starts the `home` plugin (`omadroid.home` / `OmadroidLauncher`). `OmadroidLauncher` is not a HOME app.
 
 Stock AOSP only: no Play Store, no Play services.
 

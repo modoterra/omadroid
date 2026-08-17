@@ -173,11 +173,15 @@ EOF
 }
 
 omadroid_home_package() {
-  printf '%s\n' "com.omadroid.launcher"
+  printf '%s\n' "com.omadroid.shell"
 }
 
 omadroid_home_activity() {
-  printf '%s\n' "com.omadroid.launcher/.HomeActivity"
+  printf '%s\n' "com.omadroid.shell/.HomeActivity"
+}
+
+omadroid_home_plugin_package() {
+  printf '%s\n' "com.omadroid.launcher"
 }
 
 omadroid_product_name() {

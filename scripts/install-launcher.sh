@@ -30,8 +30,9 @@ apk="$(find "${ROOT}/launcher/build/outputs/apk/debug" -name '*-debug.apk' -prin
 
 "$ADB" install -r -t "$apk"
 
-home_pkg="$(omadroid_home_package)"
-home_activity="$(omadroid_home_activity)"
+# Workbench only: product HOME is omadroid-shell.
+home_pkg="$(omadroid_home_plugin_package)"
+home_activity="${home_pkg}/.HomeActivity"
 
 if ! "$ADB" shell cmd role add-role-holder android.app.role.HOME "$home_pkg"; then
   "$ADB" shell cmd package set-home-activity "$home_activity"
