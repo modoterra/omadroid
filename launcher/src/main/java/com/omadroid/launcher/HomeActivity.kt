@@ -215,7 +215,7 @@ class HomeActivity : Activity() {
                     }
                 LinearLayout(this).apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    addView(wifiIcon, gridIconParams(style, marginEnd = style.gapPx))
+                    addView(wifiIcon, gridIconParams(style))
                 }
             }
             BarModule.Battery -> {
@@ -227,7 +227,7 @@ class HomeActivity : Activity() {
                 batteryView = GridText(this, style)
                 LinearLayout(this).apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    addView(batteryIcon, gridIconParams(style, marginEnd = style.tightGapPx))
+                    addView(batteryIcon, gridIconParams(style))
                     addView(
                         batteryView,
                         LinearLayout.LayoutParams(
@@ -324,7 +324,7 @@ class HomeActivity : Activity() {
             GridField(this, style).apply {
                 hint = getString(R.string.launcher_search)
             }
-        dock.addView(field, gridStretchParams(style, marginEnd = style.gapPx))
+        dock.addView(field, gridStretchParams(style))
         layoutButton =
             GridIconButton(this, style).apply {
                 setImageResource(R.drawable.ic_layout)
@@ -335,14 +335,14 @@ class HomeActivity : Activity() {
                     bindWorkspaces()
                 }
             }
-        dock.addView(layoutButton, gridCellParams(style, marginStart = style.tightGapPx))
+        dock.addView(layoutButton, gridCellParams(style))
         val menuButton =
             GridIconButton(this, style).apply {
                 setImageResource(R.drawable.ic_menu)
                 contentDescription = getString(R.string.launcher_menu)
                 setOnClickListener { button -> showAppMenu(button) }
             }
-        dock.addView(menuButton, gridCellParams(style, marginStart = style.tightGapPx))
+        dock.addView(menuButton, gridCellParams(style))
         return dock
     }
 
@@ -406,7 +406,7 @@ class HomeActivity : Activity() {
         workspaceButtons.clear()
         visibleWorkspaces(workspaces, layout).forEach { workspace ->
             val button =
-                GridButton(this, style, compact = true).apply {
+                GridButton(this, style).apply {
                     text = workspace.name
                     contentDescription = getString(R.string.workspace_label, workspace.name)
                     setOnClickListener {
@@ -415,7 +415,7 @@ class HomeActivity : Activity() {
                     }
                 }
             workspaceButtons[workspace.id] = button
-            workspaceSwitcher.addView(button)
+            workspaceSwitcher.addView(button, gridCellParams(style))
         }
         workspaceSwitcher.visibility =
             if (layout == LauncherLayout.Focus) View.GONE else View.VISIBLE

@@ -7,22 +7,22 @@ import org.junit.Test
 
 class GridStyleTest {
     @Test
-    fun oneControlFitsInOneUnit() {
-        val style = GridStyle(unitPx = 48, colors = stubColors())
-        assertEquals(48, style.cellPx)
-        assertTrue(style.textSizePx < style.cellPx)
-        assertTrue(style.iconPx < style.cellPx)
-        assertTrue(style.insetPx * 2 + style.textSizePx <= style.cellPx)
-        assertTrue(style.fieldHeightPx <= style.cellPx)
-        assertTrue(style.cornerPx < style.cellPx / 4f)
+    fun spaceIsEqualAndInnerFitsTheCell() {
+        val style = GridStyle(unitPx = 32, colors = stubColors())
+        assertEquals(32, style.cellPx)
+        assertEquals(4, style.spacePx)
+        assertEquals(24, style.innerPx)
+        assertEquals(style.innerPx + 2 * style.spacePx, style.cellPx)
+        assertEquals(0f, style.cornerPx)
+        assertTrue(style.textSizePx <= style.innerPx)
     }
 
     @Test
     fun scalesWithTheUnit() {
-        val style = GridStyle(unitPx = 96, colors = stubColors())
-        assertEquals(16, style.insetPx)
-        assertEquals(96 * 20 / com.omadroid.launcher.UNIT_DP, style.iconPx)
-        assertEquals(96 * 14 / com.omadroid.launcher.UNIT_DP, style.textSizePx)
+        val style = GridStyle(unitPx = 64, colors = stubColors())
+        assertEquals(8, style.spacePx)
+        assertEquals(48, style.innerPx)
+        assertEquals(style.spacePx * 2 + style.innerPx, style.cellPx)
     }
 
     private fun stubColors(): ThemeColors =

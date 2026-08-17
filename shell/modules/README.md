@@ -12,10 +12,9 @@ userland and load through `omadroid-shell`.
 | Workspace switcher | `omadroid.workspace-switcher` | Selects the active workspace. Mounts a switcher on the Bar (Left). |
 | Dock | `omadroid.dock` | Bottom chrome. One unit tall. Search field, layout, menu. |
 
-One unit is one line of text, one field, or one button. The unit length
-is still TBD (`UNIT_DP` in `ViewportGrid.kt`). The Grid gives leftover
-pixels to the Fill slot so Workspaces can tile later. The Dock field
-is a `GridField`: one unit tall, no stock EditText chrome.
+One unit is a square. Every pad and margin is the same length
+(`spacePx` = unit/8). Corners are square. The unit length is still
+TBD (`UNIT_DP`). The Grid gives leftover pixels to the Fill slot.
 
 A module may contribute placements to another module. The workspace
 switcher does that for the Bar. It is not a plugin.
