@@ -43,12 +43,16 @@ class GridSheet(
                 setOnClickListener { popOrDismiss() }
             }
         header.addView(backButton, gridCellParams(style))
-        titleView = GridText(context, style)
+        titleView =
+            GridText(context, style).apply {
+                gravity = Gravity.CENTER_VERTICAL or Gravity.START
+            }
         header.addView(
             titleView,
-            LinearLayout.LayoutParams(0, style.innerPx, 1f).apply {
-                marginStart = style.spacePx
-            },
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                style.innerPx,
+            ),
         )
         addView(
             header,

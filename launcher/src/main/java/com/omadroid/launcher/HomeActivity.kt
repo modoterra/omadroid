@@ -537,7 +537,7 @@ class HomeActivity : Activity() {
                         MenuItem(
                             id = ROUTE_THEME,
                             title = getString(R.string.sheet_theme),
-                            icon = IconGlyphs.PALETTE,
+                            icon = IconGlyphs.PAINT,
                         ),
                     ),
                 ),
@@ -573,7 +573,6 @@ class HomeActivity : Activity() {
                                 MenuItem(
                                     id = slug,
                                     title = ThemeCatalog.displayName(slug),
-                                    icon = IconGlyphs.PALETTE,
                                     selected = slug == theme.slug,
                                 )
                             },

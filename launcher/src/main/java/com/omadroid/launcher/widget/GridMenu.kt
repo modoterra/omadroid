@@ -51,7 +51,7 @@ class GridMenu(
                     ),
                 )
             }
-            section.items.forEach { item ->
+            section.items.forEachIndexed { index, item ->
                 column.addView(
                     GridMenuRow(context, style, item).apply {
                         setOnClickListener { handleClick(item) }
@@ -61,6 +61,23 @@ class GridMenu(
                         style.cellPx,
                     ),
                 )
+                if (index < section.items.lastIndex) {
+                    val rule =
+                        View(context).apply {
+                            setBackgroundColor(style.colors.muted)
+                            alpha = 0.25f
+                        }
+                    column.addView(
+                        rule,
+                        LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            1,
+                        ).apply {
+                            marginStart = style.spacePx
+                            marginEnd = style.spacePx
+                        },
+                    )
+                }
             }
         }
     }
@@ -88,12 +105,14 @@ class GridMenuRow(
         isFocusable = true
         contentDescription = item.title
         minimumHeight = style.cellPx
-        val icon =
-            GridIcon(context, style).apply {
-                text = item.icon.orEmpty()
-                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-            }
-        addView(icon, LinearLayout.LayoutParams(style.innerPx, style.innerPx))
+        if (item.icon != null) {
+            val icon =
+                GridIcon(context, style).apply {
+                    text = item.icon
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                }
+            addView(icon, LinearLayout.LayoutParams(style.innerPx, style.innerPx))
+        }
         val label =
             GridText(context, style).apply {
                 text = item.title
