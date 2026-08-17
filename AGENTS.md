@@ -14,6 +14,7 @@ Stock AOSP only: no Play Store, no Play services.
 - `./scripts/start.sh` boots the workbench. Windowed boots pass `-fixed-scale`.
 - `./scripts/start.sh --headless` boots without a window.
 - `./scripts/start.sh --product --aosp <tree>` boots the built `omadroid_x86_64` image.
+- `./scripts/sync-product.sh --aosp <tree>` is the remount/push helper. `-writable-system` hangs this goldfish super boot (grey screen); do not pass it until that is fixed.
 - `./scripts/strip.sh` disables stock product apps for user 0 on the workbench image.
 - `./scripts/install-launcher.sh` builds `com.omadroid.launcher`, strips product apps, sets HOME, and disables Launcher3.
 - `./scripts/prepare-aosp.sh --aosp <tree>` links this repo into an AOSP checkout for `lunch omadroid_x86_64-aosp_current-userdebug`.

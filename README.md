@@ -58,6 +58,8 @@ Boot the built product image instead of the workbench AVD:
 ./scripts/start.sh --product --aosp /path/to/aosp
 ```
 
+`-writable-system` on this goldfish/`super.img` boot hangs at a grey screen. Until that is fixed, product app changes still need `m` and a guest restart.
+
 Windowed boots use `-fixed-scale` so the guest is 1:1 device pixels. Auto-scale on a HiDPI or XWayland host either shrinks the phone to a postage stamp or leaves a tiled window mostly empty.
 
 On Omarchy / Hyprland, float the window whose class is `Emulator`:
