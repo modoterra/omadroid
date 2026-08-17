@@ -49,6 +49,7 @@ class HomeActivity : Activity() {
     private lateinit var theme: ThemeColors
     private lateinit var style: GridStyle
     private var unitPx: Int = 0
+    private var themeListY: Int = 0
     private lateinit var grid: GridMetrics
     private lateinit var slots: Map<BuiltinModule, AllocatedSpace>
     private lateinit var layoutButton: GridIconButton
@@ -581,8 +582,13 @@ class HomeActivity : Activity() {
                 ),
             )
         }
-        menu.onItemClick = { item -> activateTheme(item.id) }
+        menu.setOnScrollChangeListener { _, _, y, _, _ -> themeListY = y }
+        menu.onItemClick = { item ->
+            themeListY = menu.scrollY
+            activateTheme(item.id)
+        }
         paint()
+        menu.post { menu.scrollTo(0, themeListY) }
         return menu
     }
 
