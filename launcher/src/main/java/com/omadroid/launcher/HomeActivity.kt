@@ -130,24 +130,19 @@ class HomeActivity : Activity() {
     }
 
     private fun buildChrome(): View {
-        val root =
+        val chrome =
             LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 setBackgroundColor(theme.background)
             }
-        root.addView(
+        chrome.addView(
             buildBar(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 slots.getValue(BuiltinModule.Bar).pixels.height,
             ),
         )
-        val stage = FrameLayout(this)
-        val column =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-            }
-        column.addView(
+        chrome.addView(
             buildWorkspaces(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -155,15 +150,16 @@ class HomeActivity : Activity() {
                 1f,
             ),
         )
-        column.addView(
+        chrome.addView(
             buildDock(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 slots.getValue(BuiltinModule.Dock).pixels.height,
             ),
         )
-        stage.addView(
-            column,
+        val root = FrameLayout(this)
+        root.addView(
+            chrome,
             FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -173,19 +169,11 @@ class HomeActivity : Activity() {
             GridSheet(this, style).apply {
                 render = { route -> buildSheetPage(route) }
             }
-        stage.addView(
+        root.addView(
             sheet,
             FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
-            ),
-        )
-        root.addView(
-            stage,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f,
             ),
         )
         return root
