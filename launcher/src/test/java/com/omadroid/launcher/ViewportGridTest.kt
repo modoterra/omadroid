@@ -19,15 +19,15 @@ class ViewportGridTest {
         val slots = allocateSpace(grid, defaultSpaceClaims())
         val bar = slots.getValue(BuiltinModule.Bar)
         val workspaces = slots.getValue(BuiltinModule.Workspaces)
-        val launcher = slots.getValue(BuiltinModule.LauncherBar)
+        val dock = slots.getValue(BuiltinModule.Dock)
 
         assertEquals(1, bar.units.rows)
         assertEquals(0, bar.units.row)
         assertEquals(48, bar.pixels.height)
 
-        assertEquals(1, launcher.units.rows)
-        assertEquals(39, launcher.units.row)
-        assertEquals(48, launcher.pixels.height)
+        assertEquals(1, dock.units.rows)
+        assertEquals(39, dock.units.row)
+        assertEquals(48, dock.pixels.height)
 
         assertEquals(1, workspaces.units.row)
         assertEquals(38, workspaces.units.rows)
@@ -40,7 +40,7 @@ class ViewportGridTest {
         val grid = measureGrid(100, 100, 48)
         val slots = allocateSpace(grid, defaultSpaceClaims())
         assertEquals(48, slots.getValue(BuiltinModule.Bar).pixels.height)
-        assertEquals(48, slots.getValue(BuiltinModule.LauncherBar).pixels.height)
+        assertEquals(48, slots.getValue(BuiltinModule.Dock).pixels.height)
         assertEquals(4, slots.getValue(BuiltinModule.Workspaces).pixels.height)
         assertEquals(100, slots.getValue(BuiltinModule.Workspaces).pixels.width)
     }

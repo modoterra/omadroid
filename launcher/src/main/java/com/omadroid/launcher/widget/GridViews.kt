@@ -76,7 +76,7 @@ class GridIconButton(context: Context, style: GridStyle) : ImageButton(context) 
     }
 }
 
-class GridField(context: Context, style: GridStyle) : EditText(context) {
+class GridField(context: Context, style: GridStyle) : EditText(context, null, 0) {
     init {
         setHintTextColor(style.colors.muted)
         setTextColor(style.colors.foreground)
@@ -92,8 +92,11 @@ class GridField(context: Context, style: GridStyle) : EditText(context) {
         inputType = EditorInfo.TYPE_CLASS_TEXT
         isSingleLine = true
         includeFontPadding = false
+        gravity = Gravity.CENTER_VERTICAL
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
-        minHeight = style.cellPx
+        minHeight = 0
+        minimumHeight = 0
+        maxHeight = style.cellPx
     }
 }
 

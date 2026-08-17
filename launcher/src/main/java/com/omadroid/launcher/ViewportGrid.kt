@@ -64,7 +64,7 @@ fun measureGrid(widthPx: Int, heightPx: Int, unitPx: Int): GridMetrics {
 fun defaultSpaceClaims(): List<SpaceClaim> =
     listOf(
         SpaceClaim(BuiltinModule.Bar, rows = 1, attach = Attach.Top),
-        SpaceClaim(BuiltinModule.LauncherBar, rows = 1, attach = Attach.Bottom),
+        SpaceClaim(BuiltinModule.Dock, rows = 1, attach = Attach.Bottom),
         SpaceClaim(BuiltinModule.Workspaces, attach = Attach.Fill),
     )
 

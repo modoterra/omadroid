@@ -148,10 +148,10 @@ class HomeActivity : Activity() {
             ),
         )
         root.addView(
-            buildLauncherBar(),
+            buildDock(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                slots.getValue(BuiltinModule.LauncherBar).pixels.height,
+                slots.getValue(BuiltinModule.Dock).pixels.height,
             ),
         )
         return root
@@ -315,16 +315,16 @@ class HomeActivity : Activity() {
         }
     }
 
-    private fun buildLauncherBar(): View {
-        val bar =
+    private fun buildDock(): View {
+        val dock =
             GridRow(this, style).apply {
-                contentDescription = getString(R.string.app_name)
+                contentDescription = getString(R.string.dock_name)
             }
         val field =
             GridField(this, style).apply {
                 hint = getString(R.string.launcher_search)
             }
-        bar.addView(field, gridStretchParams(style, marginEnd = style.gapPx))
+        dock.addView(field, gridStretchParams(style, marginEnd = style.gapPx))
         layoutButton =
             GridIconButton(this, style).apply {
                 setImageResource(R.drawable.ic_layout)
@@ -335,15 +335,15 @@ class HomeActivity : Activity() {
                     bindWorkspaces()
                 }
             }
-        bar.addView(layoutButton, gridCellParams(style, marginStart = style.tightGapPx))
+        dock.addView(layoutButton, gridCellParams(style, marginStart = style.tightGapPx))
         val menuButton =
             GridIconButton(this, style).apply {
                 setImageResource(R.drawable.ic_menu)
                 contentDescription = getString(R.string.launcher_menu)
                 setOnClickListener { button -> showAppMenu(button) }
             }
-        bar.addView(menuButton, gridCellParams(style, marginStart = style.tightGapPx))
-        return bar
+        dock.addView(menuButton, gridCellParams(style, marginStart = style.tightGapPx))
+        return dock
     }
 
     private fun bindLayoutButton() {

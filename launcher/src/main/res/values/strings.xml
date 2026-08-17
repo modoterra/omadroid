@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Omadroid</string>
     <string name="launcher_search">Search</string>
+    <string name="dock_name">Dock</string>
     <string name="launcher_layout">Layout</string>
     <string name="launcher_menu">Menu</string>
     <string name="launcher_layout_desktop">Desktop layout</string>
