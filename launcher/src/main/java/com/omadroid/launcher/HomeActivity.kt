@@ -37,6 +37,9 @@ import java.util.Locale
 class HomeActivity : Activity() {
     private lateinit var launcherApps: LauncherApps
     private lateinit var theme: ThemeColors
+    private lateinit var grid: GridMetrics
+    private lateinit var slots: Map<BuiltinModule, AllocatedSpace>
+    private var unitPx: Int = 0
     private lateinit var layoutButton: ImageButton
     private lateinit var dateView: TextView
     private lateinit var wifiIcon: ImageView
@@ -68,6 +71,14 @@ class HomeActivity : Activity() {
             )
         }
         window.decorView.setBackgroundColor(theme.background)
+        unitPx = unitLengthPx(resources.displayMetrics.density)
+        grid =
+            measureGrid(
+                resources.displayMetrics.widthPixels,
+                resources.displayMetrics.heightPixels,
+                unitPx,
+            )
+        slots = allocateSpace(grid, defaultSpaceClaims())
         setContentView(buildChrome())
         bindLayoutButton()
         bindBar()
@@ -119,7 +130,7 @@ class HomeActivity : Activity() {
             buildBar(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                slots.getValue(BuiltinModule.Bar).pixels.height,
             ),
         )
         root.addView(
@@ -134,7 +145,7 @@ class HomeActivity : Activity() {
             buildLauncherBar(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                slots.getValue(BuiltinModule.LauncherBar).pixels.height,
             ),
         )
         return root
@@ -144,8 +155,8 @@ class HomeActivity : Activity() {
         val bar =
             FrameLayout(this).apply {
                 setBackgroundColor(theme.lighterBackground)
-                val pad = dp(12)
-                setPadding(pad, pad + dp(4), pad, pad)
+                val pad = (unitPx / 6).coerceAtLeast(1)
+                setPadding(pad, 0, pad, 0)
                 contentDescription = getString(R.string.bar_name)
             }
         val arranged = arrangeBar(composeBarPlacements(builtinModules(), defaultBarPlacements))
@@ -158,7 +169,7 @@ class HomeActivity : Activity() {
     private fun matchBar(): FrameLayout.LayoutParams =
         FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
         )
 
     private fun buildAnchor(
@@ -208,7 +219,7 @@ class HomeActivity : Activity() {
                     }
                 LinearLayout(this).apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    addView(wifiIcon, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(10) })
+                    addView(wifiIcon, LinearLayout.LayoutParams(iconPx(), iconPx()).apply { marginEnd = unitPx / 5 })
                 }
             }
             BarModule.Battery -> {
@@ -226,7 +237,7 @@ class HomeActivity : Activity() {
                     }
                 LinearLayout(this).apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    addView(batteryIcon, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(4) })
+                    addView(batteryIcon, LinearLayout.LayoutParams(iconPx(), iconPx()).apply { marginEnd = unitPx / 12 })
                     addView(
                         batteryView,
                         LinearLayout.LayoutParams(
@@ -321,8 +332,8 @@ class HomeActivity : Activity() {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
                 setBackgroundColor(theme.lighterBackground)
-                val pad = dp(12)
-                setPadding(pad, pad, pad, pad + dp(8))
+                val pad = (unitPx / 6).coerceAtLeast(1)
+                setPadding(pad, 0, pad, 0)
                 contentDescription = getString(R.string.app_name)
             }
         val field = EditText(this).apply {
@@ -330,16 +341,18 @@ class HomeActivity : Activity() {
             setHintTextColor(theme.muted)
             setTextColor(theme.foreground)
             setBackground(inputBackground())
-            setPadding(dp(14), dp(10), dp(14), dp(10))
+            val inset = (unitPx / 6).coerceAtLeast(1)
+            setPadding(inset, 0, inset, 0)
             imeOptions = EditorInfo.IME_ACTION_SEARCH
             inputType = EditorInfo.TYPE_CLASS_TEXT
             isSingleLine = true
+            includeFontPadding = false
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
         }
         bar.addView(
             field,
-            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-                marginEnd = dp(8)
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
+                marginEnd = unitPx / 6
             },
         )
         layoutButton = iconButton(R.drawable.ic_layout, getString(R.string.launcher_layout)) {
@@ -403,22 +416,22 @@ class HomeActivity : Activity() {
             imageTintList = ColorStateList.valueOf(theme.foreground)
             setBackgroundColor(0)
             contentDescription = description
-            minimumWidth = dp(48)
-            minimumHeight = dp(48)
+            minimumWidth = unitPx
+            minimumHeight = unitPx
             setOnClickListener(onClick)
         }
     }
 
     private fun buttonParams(): LinearLayout.LayoutParams =
-        LinearLayout.LayoutParams(dp(48), dp(48)).apply { marginStart = dp(4) }
+        LinearLayout.LayoutParams(unitPx, unitPx).apply { marginStart = unitPx / 12 }
 
     private fun inputBackground(): GradientDrawable =
         GradientDrawable().apply {
             setColor(theme.darkBackground)
-            cornerRadius = dp(8).toFloat()
+            cornerRadius = (unitPx / 6).toFloat()
         }
 
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+    private fun iconPx(): Int = (unitPx * 20 / UNIT_DP).coerceAtLeast(1)
 
     private fun buildWorkspaces(): View {
         workspaceCanvas =
@@ -443,8 +456,8 @@ class HomeActivity : Activity() {
                 TextView(this).apply {
                     text = workspace.name
                     gravity = Gravity.CENTER
-                    minWidth = dp(48)
-                    minHeight = dp(48)
+                    minWidth = unitPx
+                    minHeight = unitPx
                     textSize = 16f
                     contentDescription = getString(R.string.workspace_label, workspace.name)
                     setOnClickListener {
