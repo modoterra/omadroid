@@ -2,7 +2,10 @@ package com.omadroid.launcher.widget
 
 import android.content.Context
 import android.view.Gravity
+import android.view.InputDevice
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -26,6 +29,7 @@ class GridMenu(
         isFocusable = true
         isFocusableInTouchMode = true
         descendantFocusability = FOCUS_BLOCK_DESCENDANTS
+        isSmoothScrollingEnabled = false
         addView(
             column,
             ViewGroup.LayoutParams(
@@ -37,6 +41,28 @@ class GridMenu(
 
     override fun requestChildFocus(child: View?, focused: View?) {
         // Mouse hover/wheel must not scroll a row into view.
+    }
+
+    override fun fling(velocityY: Int) {
+        // Wheel and drag must stop when the finger/wheel does.
+    }
+
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (event.action != MotionEvent.ACTION_SCROLL) {
+            return super.onGenericMotionEvent(event)
+        }
+        if (!event.isFromSource(InputDevice.SOURCE_CLASS_POINTER)) {
+            return super.onGenericMotionEvent(event)
+        }
+        val notches = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
+        if (notches == 0f) {
+            return super.onGenericMotionEvent(event)
+        }
+        val step = ViewConfiguration.get(context).scaledVerticalScrollFactor
+        val next = (scrollY - notches * step).toInt()
+        val max = (column.height - height).coerceAtLeast(0)
+        scrollTo(0, next.coerceIn(0, max))
+        return true
     }
 
     fun bind(spec: MenuSpec) {
