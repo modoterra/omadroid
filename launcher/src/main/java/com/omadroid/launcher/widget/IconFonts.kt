@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Typeface
 import android.graphics.fonts.Font
 import android.graphics.fonts.FontFamily
-import android.os.Build
 import com.omadroid.launcher.R
 
 object IconFonts {
@@ -13,27 +12,25 @@ object IconFonts {
     @Volatile
     private var uiFace: Typeface? = null
 
+    @Volatile
+    private var omarchyFace: Typeface? = null
+
     fun ui(context: Context): Typeface {
         uiFace?.let {
             return it
         }
-        val loaded =
-            if (Build.VERSION.SDK_INT >= 29) {
-                val nerdFd = context.resources.openRawResourceFd(R.font.jetbrains_mono_nerd)
-                val nerd =
-                    nerdFd.use { fd ->
-                        FontFamily.Builder(Font.Builder(fd.parcelFileDescriptor).build()).build()
-                    }
-                val omarchy =
-                    FontFamily.Builder(Font.Builder(context.assets, OMARCHY_ASSET).build()).build()
-                Typeface.CustomFallbackBuilder(nerd)
-                    .addCustomFallback(omarchy)
-                    .setSystemFallback("monospace")
-                    .build()
-            } else {
-                context.resources.getFont(R.font.jetbrains_mono_nerd)
-            }
+        val loaded = context.resources.getFont(R.font.jetbrains_mono_nerd)
         uiFace = loaded
+        return loaded
+    }
+
+    fun omarchy(context: Context): Typeface {
+        omarchyFace?.let {
+            return it
+        }
+        val family = FontFamily.Builder(Font.Builder(context.assets, OMARCHY_ASSET).build()).build()
+        val loaded = Typeface.CustomFallbackBuilder(family).build()
+        omarchyFace = loaded
         return loaded
     }
 }
