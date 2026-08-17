@@ -1,0 +1,9 @@
+/sdk/
+/avd/
+/.android/
+/launcher/.gradle/
+/launcher/build/
+/launcher/local.properties
+/analytics.settings
+*.apk
+*.ap_
