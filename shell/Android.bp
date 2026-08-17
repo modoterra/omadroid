@@ -2,12 +2,17 @@
 //
 // https://source.android.com/docs/setup/build/building
 
+android_library {
+    name: "OmadroidTheme",
+    srcs: ["lib/theme/**/*.kt"],
+    manifest: "lib/theme/AndroidManifest.xml",
+    sdk_version: "current",
+}
+
 android_app {
     name: "OmadroidShell",
-    srcs: [
-        "src/main/java/**/*.kt",
-        "lib/theme/**/*.kt",
-    ],
+    srcs: ["src/main/java/**/*.kt"],
+    static_libs: ["OmadroidTheme"],
     resource_dirs: ["src/main/res"],
     asset_dirs: ["plugins", "themes"],
     manifest: "src/main/AndroidManifest.xml",

@@ -67,6 +67,9 @@ omadroid_stage_soong_app "$ROOT" "$vendor_dir" shell
 if [[ -d "${ROOT}/shell/plugins" ]]; then
   ln -sfn "${ROOT}/shell/plugins" "${vendor_dir}/shell/plugins"
 fi
+if [[ -d "${ROOT}/shell/lib" ]]; then
+  ln -sfn "${ROOT}/shell/lib" "${vendor_dir}/shell/lib"
+fi
 if [[ -d "${ROOT}/shell/themes" ]]; then
   ln -sfn "${ROOT}/shell/themes" "${vendor_dir}/shell/themes"
   ln -sfn "${ROOT}/shell/themes" "${vendor_dir}/launcher/themes"
