@@ -11,7 +11,6 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
@@ -86,8 +85,7 @@ class HomeActivity : Activity() {
                 addAction(Intent.ACTION_TIME_CHANGED)
                 addAction(Intent.ACTION_TIMEZONE_CHANGED)
                 addAction(Intent.ACTION_BATTERY_CHANGED)
-                addAction(WifiManager.WIFI_STATE_CHANGED_ACTION)
-                addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
+                addAction(ConnectivityManager.CONNECTIVITY_ACTION)
             }
         if (Build.VERSION.SDK_INT >= 33) {
             registerReceiver(barReceiver, filter, RECEIVER_EXPORTED)
@@ -232,16 +230,17 @@ class HomeActivity : Activity() {
     }
 
     private fun currentWifiState(): WifiState {
-        val wifi = getSystemService(WifiManager::class.java)
-        if (wifi == null || !wifi.isWifiEnabled) {
-            return WifiState.Off
-        }
-        val connectivity = getSystemService(ConnectivityManager::class.java) ?: return WifiState.Disconnected
-        val network = connectivity.activeNetwork ?: return WifiState.Disconnected
-        val caps = connectivity.getNetworkCapabilities(network) ?: return WifiState.Disconnected
-        return if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            WifiState.Connected
-        } else {
+        return try {
+            val connectivity =
+                getSystemService(ConnectivityManager::class.java) ?: return WifiState.Disconnected
+            val network = connectivity.activeNetwork ?: return WifiState.Disconnected
+            val caps = connectivity.getNetworkCapabilities(network) ?: return WifiState.Disconnected
+            if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                WifiState.Connected
+            } else {
+                WifiState.Disconnected
+            }
+        } catch (_: SecurityException) {
             WifiState.Disconnected
         }
     }
