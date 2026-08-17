@@ -45,6 +45,7 @@ object IconGlyphs {
     const val PLUG = "\uF1E6"
     const val LAYOUT = "\uF009"
     const val MENU = "\uF0C9"
+    const val BACK = "\uF053"
     const val OMARCHY = "\uE900"
 
     fun battery(percent: Int, charging: Boolean): String {

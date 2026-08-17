@@ -19,7 +19,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.PopupMenu
+import android.widget.ScrollView
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 import com.omadroid.launcher.widget.GridButton
@@ -28,6 +28,7 @@ import com.omadroid.launcher.widget.GridField
 import com.omadroid.launcher.widget.GridIcon
 import com.omadroid.launcher.widget.GridIconButton
 import com.omadroid.launcher.widget.GridRow
+import com.omadroid.launcher.widget.GridSheet
 import com.omadroid.launcher.widget.GridStyle
 import com.omadroid.launcher.widget.GridText
 import com.omadroid.launcher.widget.IconGlyphs
@@ -55,6 +56,7 @@ class HomeActivity : Activity() {
     private var workspaces: Workspaces = defaultWorkspaces()
     private lateinit var workspaceSwitcher: LinearLayout
     private lateinit var workspaceCanvas: FrameLayout
+    private lateinit var sheet: GridSheet
     private val workspaceButtons = mutableMapOf<String, GridButton>()
     private val user: UserHandle = Process.myUserHandle()
     private val barReceiver =
@@ -93,7 +95,7 @@ class HomeActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(
                 OnBackInvokedDispatcher.PRIORITY_DEFAULT,
-                OnBackInvokedCallback { },
+                OnBackInvokedCallback { onSheetBack() },
             )
         }
     }
@@ -140,7 +142,12 @@ class HomeActivity : Activity() {
                 slots.getValue(BuiltinModule.Bar).pixels.height,
             ),
         )
-        root.addView(
+        val stage = FrameLayout(this)
+        val column =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+            }
+        column.addView(
             buildWorkspaces(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -148,11 +155,37 @@ class HomeActivity : Activity() {
                 1f,
             ),
         )
-        root.addView(
+        column.addView(
             buildDock(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 slots.getValue(BuiltinModule.Dock).pixels.height,
+            ),
+        )
+        stage.addView(
+            column,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
+        )
+        sheet =
+            GridSheet(this, style).apply {
+                render = { route -> buildSheetPage(route) }
+            }
+        stage.addView(
+            sheet,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
+        )
+        root.addView(
+            stage,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
             ),
         )
         return root
@@ -325,6 +358,9 @@ class HomeActivity : Activity() {
         val field =
             GridField(this, style).apply {
                 hint = getString(R.string.launcher_search)
+                isFocusable = false
+                isClickable = true
+                setOnClickListener { openSheet(searchRoute()) }
             }
         dock.addView(field, gridStretchParams(style))
         layoutButton =
@@ -342,7 +378,7 @@ class HomeActivity : Activity() {
             GridIconButton(this, style).apply {
                 text = IconGlyphs.MENU
                 contentDescription = getString(R.string.launcher_menu)
-                setOnClickListener { button -> showAppMenu(button) }
+                setOnClickListener { openSheet(menuRoute()) }
             }
         dock.addView(menuButton, gridCellParams(style))
         return dock
@@ -358,34 +394,142 @@ class HomeActivity : Activity() {
         layoutButton.tint(if (layout == LauncherLayout.Focus) theme.accent else theme.foreground)
     }
 
-    private fun showAppMenu(anchor: View) {
-        val infos = launcherApps.getActivityList(null, user)
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (onSheetBack()) {
+            return
+        }
+        super.onBackPressed()
+    }
+
+    private fun onSheetBack(): Boolean {
+        if (!::sheet.isInitialized || !sheet.isOpen) {
+            return false
+        }
+        return sheet.popOrDismiss()
+    }
+
+    private fun searchRoute(): NavRoute =
+        NavRoute(ROUTE_SEARCH, getString(R.string.launcher_search))
+
+    private fun menuRoute(): NavRoute =
+        NavRoute(ROUTE_MENU, getString(R.string.sheet_apps))
+
+    private fun openSheet(route: NavRoute) {
+        if (sheet.isOpen) {
+            sheet.push(route)
+        } else {
+            sheet.show(route)
+        }
+    }
+
+    private fun buildSheetPage(route: NavRoute): View {
+        return when (route.id) {
+            ROUTE_SEARCH -> buildSearchPage()
+            ROUTE_MENU -> buildAppsPage()
+            else ->
+                GridText(this, style).apply {
+                    text = route.title
+                }
+        }
+    }
+
+    private fun buildSearchPage(): View {
+        val column =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(style.spacePx, style.spacePx, style.spacePx, style.spacePx)
+            }
+        val field =
+            GridField(this, style).apply {
+                hint = getString(R.string.launcher_search)
+            }
+        column.addView(
+            field,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                style.innerPx,
+            ),
+        )
+        val empty =
+            GridText(this, style).apply {
+                text = getString(R.string.sheet_search_empty)
+            }
+        column.addView(
+            empty,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                style.innerPx,
+            ).apply { topMargin = style.spacePx },
+        )
         val apps =
-            visibleLaunchableApps(
-                infos.map { info ->
-                    LaunchableApp(
-                        packageName = info.componentName.packageName,
-                        activityName = info.componentName.className,
-                        label = info.label.toString(),
-                    )
-                },
-                packageName,
+            GridButton(this, style).apply {
+                text = getString(R.string.sheet_apps)
+                gravity = Gravity.CENTER_VERTICAL
+                setOnClickListener { sheet.push(menuRoute()) }
+            }
+        column.addView(
+            apps,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                style.innerPx,
+            ).apply { topMargin = style.spacePx },
+        )
+        return column
+    }
+
+    private fun buildAppsPage(): View {
+        val apps = launchableApps()
+        val column =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+            }
+        apps.forEach { app ->
+            val row =
+                GridButton(this, style).apply {
+                    text = app.label
+                    gravity = Gravity.CENTER_VERTICAL
+                    setOnClickListener {
+                        launcherApps.startMainActivity(
+                            ComponentName(app.packageName, app.activityName),
+                            user,
+                            null,
+                            null,
+                        )
+                        sheet.dismiss()
+                    }
+                }
+            column.addView(
+                row,
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    style.innerPx,
+                ),
             )
-        val menu = PopupMenu(this, anchor)
-        apps.forEachIndexed { index, app ->
-            menu.menu.add(0, index, index, app.label)
         }
-        menu.setOnMenuItemClickListener { item ->
-            val app = apps[item.itemId]
-            launcherApps.startMainActivity(
-                ComponentName(app.packageName, app.activityName),
-                user,
-                null,
-                null,
+        return ScrollView(this).apply {
+            addView(
+                column,
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ),
             )
-            true
         }
-        menu.show()
+    }
+
+    private fun launchableApps(): List<LaunchableApp> {
+        val infos = launcherApps.getActivityList(null, user)
+        return visibleLaunchableApps(
+            infos.map { info ->
+                LaunchableApp(
+                    packageName = info.componentName.packageName,
+                    activityName = info.componentName.className,
+                    label = info.label.toString(),
+                )
+            },
+            packageName,
+        )
     }
 
     private fun buildWorkspaces(): View {
@@ -432,5 +576,7 @@ class HomeActivity : Activity() {
     companion object {
         private const val STATE_LAYOUT = "launcher_layout"
         private const val STATE_WORKSPACE = "workspace"
+        private const val ROUTE_SEARCH = "search"
+        private const val ROUTE_MENU = "menu"
     }
 }

@@ -7,6 +7,7 @@ enum class BuiltinModule(val id: String) {
     Workspaces("omadroid.workspaces"),
     WorkspaceSwitcher("omadroid.workspace-switcher"),
     Dock("omadroid.dock"),
+    Sheet("omadroid.sheet"),
 }
 
 data class ModuleSpec(
@@ -26,6 +27,7 @@ fun builtinModules(): List<ModuleSpec> =
                 listOf(BarPlacement(BarModule.WorkspaceSwitcher, BarAnchor.Left)),
         ),
         ModuleSpec(BuiltinModule.Dock),
+        ModuleSpec(BuiltinModule.Sheet),
     )
 
 fun composeBarPlacements(
