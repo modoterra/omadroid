@@ -148,7 +148,7 @@ class HomeActivity : Activity() {
                 setPadding(pad, pad + dp(4), pad, pad)
                 contentDescription = getString(R.string.bar_name)
             }
-        val arranged = arrangeBar(defaultBarPlacements)
+        val arranged = arrangeBar(composeBarPlacements(builtinModules(), defaultBarPlacements))
         bar.addView(buildAnchor(BarAnchor.Left, arranged), matchBar())
         bar.addView(buildAnchor(BarAnchor.Center, arranged), matchBar())
         bar.addView(buildAnchor(BarAnchor.Right, arranged), matchBar())
@@ -235,6 +235,15 @@ class HomeActivity : Activity() {
                         ),
                     )
                 }
+            }
+            BarModule.WorkspaceSwitcher -> {
+                workspaceSwitcher =
+                    LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        gravity = Gravity.CENTER_VERTICAL
+                        contentDescription = getString(R.string.workspaces_name)
+                    }
+                workspaceSwitcher
             }
         }
     }
@@ -412,43 +421,21 @@ class HomeActivity : Activity() {
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun buildWorkspaces(): View {
-        val module =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                setBackgroundColor(theme.background)
-                contentDescription = getString(R.string.workspaces_name)
-            }
-        workspaceSwitcher =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER
-                val pad = dp(8)
-                setPadding(pad, pad, pad, 0)
-            }
-        module.addView(
-            workspaceSwitcher,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
         workspaceCanvas =
             FrameLayout(this).apply {
                 setBackgroundColor(theme.background)
+                contentDescription = getString(R.string.workspaces_name)
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
             }
-        module.addView(
-            workspaceCanvas,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f,
-            ),
-        )
-        return module
+        return workspaceCanvas
     }
 
     private fun bindWorkspaces() {
+        if (!::workspaceSwitcher.isInitialized) {
+            workspaceCanvas.contentDescription =
+                getString(R.string.workspace_label, workspaces.active.name)
+            return
+        }
         workspaceSwitcher.removeAllViews()
         workspaceButtons.clear()
         visibleWorkspaces(workspaces, layout).forEach { workspace ->

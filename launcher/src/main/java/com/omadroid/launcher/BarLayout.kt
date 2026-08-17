@@ -10,6 +10,7 @@ enum class BarModule {
     Date,
     Wifi,
     Battery,
+    WorkspaceSwitcher,
 }
 
 data class BarPlacement(

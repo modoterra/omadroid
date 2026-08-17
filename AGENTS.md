@@ -33,5 +33,5 @@ Stock AOSP only: no Play Store, no Play services.
 
 - Do not add Gallery, Dialer, QSB, or Launcher3 to `PRODUCT_PACKAGES`.
 - Do not remove SystemUI, Settings, or LatinIME until `omadroid-shell` replaces them.
-- First-party plugin ids use the `omadroid.` prefix and live in `shell/plugins/`.
+- Built-in modules live in `shell/modules/`. First-party plugin ids use the `omadroid.` prefix and live in `shell/plugins/`.
 - Themes are Omarchy `colors.toml` palettes in `shell/themes/`. Default is `tokyo-night`. Use those hex tokens for all UI color.

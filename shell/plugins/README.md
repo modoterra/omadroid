@@ -1,10 +1,11 @@
-# First-party plugins
+# Plugins
 
-These plugins ship with Omadroid. They are the source of the product
-image together with `device/` and `omadroid.mk`.
+Plugins are userland. They load through `omadroid-shell`. Built-in
+chrome (Bar, Workspaces, the workspace switcher) lives under
+`shell/modules/`, not here.
 
 A plugin is a directory with `manifest.json`. First-party ids use the
-`omadroid.` prefix.
+`omadroid.` prefix. User plugins will use another prefix.
 
 | Plugin | id | kinds | Soong module |
 | --- | --- | --- | --- |
