@@ -5,9 +5,9 @@ import org.junit.Test
 
 class BarLayoutTest {
     @Test
-    fun defaultPutsDateInCenterAndStatusOnRight() {
+    fun defaultPutsStatusOnRight() {
         val arranged = arrangeBar(defaultBarPlacements)
-        assertEquals(listOf(BarModule.Date), arranged[BarAnchor.Center])
+        assertEquals(emptyList<BarModule>(), arranged[BarAnchor.Center])
         assertEquals(listOf(BarModule.Wifi, BarModule.Battery), arranged[BarAnchor.Right])
         assertEquals(emptyList<BarModule>(), arranged[BarAnchor.Left])
     }
