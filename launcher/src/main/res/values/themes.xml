@@ -7,5 +7,7 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowShowWallpaper">false</item>
         <item name="android:colorBackground">@color/home_background</item>
+        <item name="android:fontFamily">@font/jetbrains_mono_nerd</item>
+        <item name="android:typeface">normal</item>
     </style>
 </resources>
