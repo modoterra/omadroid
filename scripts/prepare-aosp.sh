@@ -61,20 +61,12 @@ fi
 mkdir -p "$vendor_dir"
 ln -sfn "${ROOT}/omadroid.mk" "${vendor_dir}/omadroid.mk"
 ln -sfn "${ROOT}/device" "${vendor_dir}/device"
-ln -sfn "${ROOT}/shell" "${vendor_dir}/shell"
-# Real launcher/ so Soong finds Android.bp without ALLOW_BP_UNDER_SYMLINKS
-# (that flag makes the finder follow every symlink in the tree).
-if [[ -L "${vendor_dir}/launcher" ]]; then
-  rm -f "${vendor_dir}/launcher"
+# Real app dirs so Soong finds Android.bp without ALLOW_BP_UNDER_SYMLINKS.
+omadroid_stage_soong_app "$ROOT" "$vendor_dir" launcher
+omadroid_stage_soong_app "$ROOT" "$vendor_dir" shell
+if [[ -d "${ROOT}/shell/plugins" ]]; then
+  ln -sfn "${ROOT}/shell/plugins" "${vendor_dir}/shell/plugins"
 fi
-mkdir -p "${vendor_dir}/launcher"
-if [[ ! -e "${vendor_dir}/launcher/Android.bp" ]] || [[ -L "${vendor_dir}/launcher/Android.bp" ]]; then
-  cp -f "${ROOT}/launcher/Android.bp" "${vendor_dir}/launcher/Android.bp"
-fi
-if ! cmp -s "${ROOT}/launcher/Android.bp" "${vendor_dir}/launcher/Android.bp"; then
-  cp -f "${ROOT}/launcher/Android.bp" "${vendor_dir}/launcher/Android.bp"
-fi
-ln -sfn "${ROOT}/launcher/src" "${vendor_dir}/launcher/src"
 
 # Soong's finder does not descend into directory symlinks unless
 # ALLOW_BP_UNDER_SYMLINKS=true. Keep a real device/ directory so lunch
@@ -94,6 +86,21 @@ EOF
 
 [[ -e "${vendor_dir}/omadroid.mk" ]] || omadroid_die "vendor omadroid.mk link failed"
 [[ -f "${device_dir}/AndroidProducts.mk" ]] || omadroid_die "device AndroidProducts.mk missing"
+
+# Soong packages host test zips from Install files. When OUT_DIR is
+# absolute, those paths fail as "outside directory". Skip them.
+soong_dir="${AOSP_ROOT}/build/soong"
+soong_patch="${ROOT}/device/patches/soong-skip-absolute-host-paths-in-test-package.patch"
+if [[ -f "$soong_patch" ]]; then
+  if git -C "$soong_dir" apply --check --reverse "$soong_patch" >/dev/null 2>&1; then
+    printf 'omadroid: soong host-path skip already applied\n'
+  elif git -C "$soong_dir" apply --check "$soong_patch" >/dev/null 2>&1; then
+    git -C "$soong_dir" apply "$soong_patch"
+    printf 'omadroid: applied soong host-path skip\n'
+  else
+    omadroid_die "soong host-path skip does not apply to ${soong_dir}"
+  fi
+fi
 
 printf 'omadroid: vendor -> %s\n' "$vendor_dir"
 printf 'omadroid: device -> %s\n' "$device_dir"

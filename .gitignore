@@ -5,6 +5,9 @@
 /launcher/.gradle/
 /launcher/build/
 /launcher/local.properties
+/shell/.gradle/
+/shell/build/
+/shell/local.properties
 /analytics.settings
 *.apk
 *.ap_

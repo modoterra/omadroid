@@ -2,4 +2,6 @@
 <permissions>
     <privapp-permissions package="com.omadroid.launcher">
     </privapp-permissions>
+    <privapp-permissions package="com.omadroid.shell">
+    </privapp-permissions>
 </permissions>

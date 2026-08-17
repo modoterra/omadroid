@@ -4,24 +4,12 @@
 OMADROID_DIR := vendor/modoterra/omadroid
 
 PRODUCT_PACKAGES += \
-    OmadroidLauncher
+    OmadroidLauncher \
+    OmadroidShell
 
-PRODUCT_PACKAGES := $(filter-out \
-    Browser2 \
-    Calendar \
-    Camera2 \
-    Contacts \
-    DeskClock \
-    Gallery2 \
-    Music \
-    QuickSearchBox \
-    messaging \
-    PhotoTable \
-    ThemePicker \
-    EasterEgg \
-    Launcher3QuickStep \
-    Dialer \
-    ,$(PRODUCT_PACKAGES))
+# Do not filter-out PRODUCT_PACKAGES here. inherit-product stores
+# goldfish entries as inherit tags; filter-out never sees Gallery2.
+# OmadroidLauncher.overrides is what actually omits those modules.
 
 PRODUCT_PACKAGE_OVERLAYS += $(OMADROID_DIR)/device/overlay
 

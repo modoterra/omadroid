@@ -1,6 +1,6 @@
 # omadroid
 
-An Omarchy-inspired OS on Android, for Omarchy.
+An Omarchy-inspired OS on Android, for Omarchy. Site: [omadroid.dev](https://omadroid.dev).
 
 [Omarchy](https://github.com/basecamp/omarchy) is a beautiful, modern, opinionated Linux. Omadroid is that idea on a phone: stock AOSP, no Play Store, no Play services.
 
@@ -29,7 +29,7 @@ lunch omadroid_x86_64-aosp_current-userdebug
 m
 ```
 
-`prepare-aosp.sh` links this repo to `vendor/modoterra/omadroid` and `device/modoterra/omadroid`. First-party plugins live in `shell/plugins/`. To have `repo sync` place the checkout itself, copy `device/local_manifests/omadroid.xml` into `<aosp>/.repo/local_manifests/`.
+`prepare-aosp.sh` links this repo to `vendor/modoterra/omadroid` and `device/modoterra/omadroid`. It also applies `device/patches/soong-skip-absolute-host-paths-in-test-package.patch` so Soong can package tests when `OUT_DIR` is absolute. First-party plugins live in `shell/plugins/`. To have `repo sync` place the checkout itself, copy `device/local_manifests/omadroid.xml` into `<aosp>/.repo/local_manifests/`.
 
 ## Workbench
 
@@ -45,6 +45,12 @@ First run is a few gigabytes.
 
 ```bash
 ./scripts/start.sh
+```
+
+Boot the built product image instead of the workbench AVD:
+
+```bash
+./scripts/start.sh --product --aosp /path/to/aosp
 ```
 
 Windowed boots use `-fixed-scale` so the guest is 1:1 device pixels. Auto-scale on a HiDPI or XWayland host either shrinks the phone to a postage stamp or leaves a tiled window mostly empty.
@@ -92,6 +98,7 @@ After the emulator window appears, from another terminal:
 | --- | --- |
 | `device/` | lunch product, overlay, privapp allowlist |
 | `omadroid.mk` | `PRODUCT_PACKAGES` add/remove |
+| `shell/` | host process `omadroid-shell` (plugin registry; not HOME) |
 | `shell/plugins/` | first-party plugins (`omadroid.home`, …) |
 | `launcher/` | HOME app sources (Gradle workbench + Soong `OmadroidLauncher`) |
 | `scripts/prepare-aosp.sh` | link this repo into an AOSP checkout |
@@ -108,6 +115,7 @@ Those three data directories are gitignored.
 ```bash
 ./tests/lib.test.sh
 cd launcher && ./gradlew testDebugUnitTest
+cd shell && ./gradlew testDebugUnitTest
 ```
 
 Parser tests do not download the SDK. The Gradle tests need `platforms;android-36` from setup.

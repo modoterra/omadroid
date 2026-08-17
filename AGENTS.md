@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Omadroid is an Omarchy-inspired OS on Android, for Omarchy. See [basecamp/omarchy](https://github.com/basecamp/omarchy). This host already runs Omarchy.
+Omadroid is an Omarchy-inspired OS on Android, for Omarchy. See [basecamp/omarchy](https://github.com/basecamp/omarchy). Public site: [omadroid.dev](https://omadroid.dev). This host already runs Omarchy.
 
 This repository is the source of the product image and of every first-party plugin. AOSP is an external checkout, not vendored here.
 
-The host process is `omadroid-shell`. It is not wired yet. Until it is, `OmadroidLauncher` (`omadroid.home`) is the product HOME app.
+The host process is `omadroid-shell` (`com.omadroid.shell`, Soong `OmadroidShell`). It loads first-party plugin manifests and resolves kinds. It is not HOME yet. `OmadroidLauncher` (`omadroid.home`) remains the product HOME app.
 
 Stock AOSP only: no Play Store, no Play services.
 
@@ -13,11 +13,13 @@ Stock AOSP only: no Play Store, no Play services.
 - `./scripts/setup.sh` installs the workbench SDK, emulator, AOSP system image, and `omadroid` AVD.
 - `./scripts/start.sh` boots the workbench. Windowed boots pass `-fixed-scale`.
 - `./scripts/start.sh --headless` boots without a window.
+- `./scripts/start.sh --product --aosp <tree>` boots the built `omadroid_x86_64` image.
 - `./scripts/strip.sh` disables stock product apps for user 0 on the workbench image.
 - `./scripts/install-launcher.sh` builds `com.omadroid.launcher`, strips product apps, sets HOME, and disables Launcher3.
 - `./scripts/prepare-aosp.sh --aosp <tree>` links this repo into an AOSP checkout for `lunch omadroid_x86_64-aosp_current-userdebug`.
 - `./tests/lib.test.sh` runs parser tests. It does not download the SDK or AOSP.
 - `cd launcher && ./gradlew testDebugUnitTest` runs launcher unit tests.
+- `cd shell && ./gradlew testDebugUnitTest` runs host plugin-registry tests.
 
 ## Guest
 
