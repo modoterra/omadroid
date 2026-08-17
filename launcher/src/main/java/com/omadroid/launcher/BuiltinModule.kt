@@ -2,6 +2,7 @@ package com.omadroid.launcher
 
 enum class BuiltinModule(val id: String) {
     Grid("omadroid.grid"),
+    Widgets("omadroid.widgets"),
     Bar("omadroid.bar"),
     Workspaces("omadroid.workspaces"),
     WorkspaceSwitcher("omadroid.workspace-switcher"),
@@ -16,6 +17,7 @@ data class ModuleSpec(
 fun builtinModules(): List<ModuleSpec> =
     listOf(
         ModuleSpec(BuiltinModule.Grid),
+        ModuleSpec(BuiltinModule.Widgets),
         ModuleSpec(BuiltinModule.Bar),
         ModuleSpec(BuiltinModule.Workspaces),
         ModuleSpec(

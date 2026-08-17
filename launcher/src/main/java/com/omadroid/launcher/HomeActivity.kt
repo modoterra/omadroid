@@ -7,8 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.LauncherApps
-import android.content.res.ColorStateList
-import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.BatteryManager
@@ -19,16 +17,23 @@ import android.os.UserHandle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
-import android.widget.TextView
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
+import com.omadroid.launcher.widget.GridButton
+import com.omadroid.launcher.widget.GridChrome
+import com.omadroid.launcher.widget.GridField
+import com.omadroid.launcher.widget.GridIcon
+import com.omadroid.launcher.widget.GridIconButton
+import com.omadroid.launcher.widget.GridRow
+import com.omadroid.launcher.widget.GridStyle
+import com.omadroid.launcher.widget.GridText
+import com.omadroid.launcher.widget.gridCellParams
+import com.omadroid.launcher.widget.gridIconParams
+import com.omadroid.launcher.widget.gridStretchParams
+import com.omadroid.launcher.widget.tint
 import com.omadroid.theme.ThemeCatalog
 import com.omadroid.theme.ThemeColors
 import java.time.LocalDate
@@ -37,19 +42,19 @@ import java.util.Locale
 class HomeActivity : Activity() {
     private lateinit var launcherApps: LauncherApps
     private lateinit var theme: ThemeColors
+    private lateinit var style: GridStyle
     private lateinit var grid: GridMetrics
     private lateinit var slots: Map<BuiltinModule, AllocatedSpace>
-    private var unitPx: Int = 0
-    private lateinit var layoutButton: ImageButton
-    private lateinit var dateView: TextView
-    private lateinit var wifiIcon: ImageView
-    private lateinit var batteryIcon: ImageView
-    private lateinit var batteryView: TextView
+    private lateinit var layoutButton: GridIconButton
+    private lateinit var dateView: GridText
+    private lateinit var wifiIcon: GridIcon
+    private lateinit var batteryIcon: GridIcon
+    private lateinit var batteryView: GridText
     private var layout: LauncherLayout = LauncherLayout.Desktop
     private var workspaces: Workspaces = defaultWorkspaces()
     private lateinit var workspaceSwitcher: LinearLayout
     private lateinit var workspaceCanvas: FrameLayout
-    private val workspaceButtons = mutableMapOf<String, TextView>()
+    private val workspaceButtons = mutableMapOf<String, GridButton>()
     private val user: UserHandle = Process.myUserHandle()
     private val barReceiver =
         object : BroadcastReceiver() {
@@ -71,7 +76,8 @@ class HomeActivity : Activity() {
             )
         }
         window.decorView.setBackgroundColor(theme.background)
-        unitPx = unitLengthPx(resources.displayMetrics.density)
+        val unitPx = unitLengthPx(resources.displayMetrics.density)
+        style = GridStyle(unitPx, theme)
         grid =
             measureGrid(
                 resources.displayMetrics.widthPixels,
@@ -153,10 +159,7 @@ class HomeActivity : Activity() {
 
     private fun buildBar(): View {
         val bar =
-            FrameLayout(this).apply {
-                setBackgroundColor(theme.lighterBackground)
-                val pad = (unitPx / 6).coerceAtLeast(1)
-                setPadding(pad, 0, pad, 0)
+            GridChrome(this, style).apply {
                 contentDescription = getString(R.string.bar_name)
             }
         val arranged = arrangeBar(composeBarPlacements(builtinModules(), defaultBarPlacements))
@@ -202,47 +205,34 @@ class HomeActivity : Activity() {
     private fun buildBarModule(module: BarModule): View {
         return when (module) {
             BarModule.Date -> {
-                dateView =
-                    TextView(this).apply {
-                        setTextColor(theme.foreground)
-                        textSize = 14f
-                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-                    }
+                dateView = GridText(this, style)
                 dateView
             }
             BarModule.Wifi -> {
                 wifiIcon =
-                    ImageView(this).apply {
+                    GridIcon(this, style).apply {
                         setImageResource(R.drawable.ic_wifi)
-                        imageTintList = ColorStateList.valueOf(theme.foreground)
-                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
                     }
                 LinearLayout(this).apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    addView(wifiIcon, LinearLayout.LayoutParams(iconPx(), iconPx()).apply { marginEnd = unitPx / 5 })
+                    addView(wifiIcon, gridIconParams(style, marginEnd = style.gapPx))
                 }
             }
             BarModule.Battery -> {
                 batteryIcon =
-                    ImageView(this).apply {
+                    GridIcon(this, style).apply {
                         setImageResource(R.drawable.ic_battery)
-                        imageTintList = ColorStateList.valueOf(theme.foreground)
                         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                     }
-                batteryView =
-                    TextView(this).apply {
-                        setTextColor(theme.foreground)
-                        textSize = 14f
-                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-                    }
+                batteryView = GridText(this, style)
                 LinearLayout(this).apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    addView(batteryIcon, LinearLayout.LayoutParams(iconPx(), iconPx()).apply { marginEnd = unitPx / 12 })
+                    addView(batteryIcon, gridIconParams(style, marginEnd = style.tightGapPx))
                     addView(
                         batteryView,
                         LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT,
                         ),
                     )
                 }
@@ -267,14 +257,13 @@ class HomeActivity : Activity() {
         }
         if (::wifiIcon.isInitialized) {
             wifiIcon.contentDescription = wifiContentDescription(status.wifi)
-            wifiIcon.imageTintList =
-                ColorStateList.valueOf(
-                    when (status.wifi) {
-                        WifiState.Connected -> theme.green
-                        WifiState.Disconnected -> theme.muted
-                        WifiState.Off -> theme.red
-                    },
-                )
+            wifiIcon.tint(
+                when (status.wifi) {
+                    WifiState.Connected -> theme.green
+                    WifiState.Disconnected -> theme.muted
+                    WifiState.Off -> theme.red
+                },
+            )
             wifiIcon.alpha = if (status.wifi == WifiState.Off) 0.45f else 1f
         }
         if (::batteryView.isInitialized) {
@@ -287,9 +276,9 @@ class HomeActivity : Activity() {
                     status.batteryPercent <= 20 -> theme.red
                     else -> theme.foreground
                 }
-            batteryView.setTextColor(batteryColor)
+            batteryView.tint(batteryColor)
             if (::batteryIcon.isInitialized) {
-                batteryIcon.imageTintList = ColorStateList.valueOf(batteryColor)
+                batteryIcon.tint(batteryColor)
             }
         }
     }
@@ -328,44 +317,32 @@ class HomeActivity : Activity() {
 
     private fun buildLauncherBar(): View {
         val bar =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
-                setBackgroundColor(theme.lighterBackground)
-                val pad = (unitPx / 6).coerceAtLeast(1)
-                setPadding(pad, 0, pad, 0)
+            GridRow(this, style).apply {
                 contentDescription = getString(R.string.app_name)
             }
-        val field = EditText(this).apply {
-            hint = getString(R.string.launcher_search)
-            setHintTextColor(theme.muted)
-            setTextColor(theme.foreground)
-            setBackground(inputBackground())
-            val inset = (unitPx / 6).coerceAtLeast(1)
-            setPadding(inset, 0, inset, 0)
-            imeOptions = EditorInfo.IME_ACTION_SEARCH
-            inputType = EditorInfo.TYPE_CLASS_TEXT
-            isSingleLine = true
-            includeFontPadding = false
-            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-        }
-        bar.addView(
-            field,
-            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
-                marginEnd = unitPx / 6
-            },
-        )
-        layoutButton = iconButton(R.drawable.ic_layout, getString(R.string.launcher_layout)) {
-            layout = layout.next()
-            bindLayoutButton()
-            bindWorkspaces()
-        }
-        bar.addView(layoutButton, buttonParams())
-        val menuButton =
-            iconButton(R.drawable.ic_menu, getString(R.string.launcher_menu)) { button ->
-                showAppMenu(button)
+        val field =
+            GridField(this, style).apply {
+                hint = getString(R.string.launcher_search)
             }
-        bar.addView(menuButton, buttonParams())
+        bar.addView(field, gridStretchParams(style, marginEnd = style.gapPx))
+        layoutButton =
+            GridIconButton(this, style).apply {
+                setImageResource(R.drawable.ic_layout)
+                contentDescription = getString(R.string.launcher_layout)
+                setOnClickListener {
+                    layout = layout.next()
+                    bindLayoutButton()
+                    bindWorkspaces()
+                }
+            }
+        bar.addView(layoutButton, gridCellParams(style, marginStart = style.tightGapPx))
+        val menuButton =
+            GridIconButton(this, style).apply {
+                setImageResource(R.drawable.ic_menu)
+                contentDescription = getString(R.string.launcher_menu)
+                setOnClickListener { button -> showAppMenu(button) }
+            }
+        bar.addView(menuButton, gridCellParams(style, marginStart = style.tightGapPx))
         return bar
     }
 
@@ -376,8 +353,7 @@ class HomeActivity : Activity() {
                 LauncherLayout.Focus -> getString(R.string.launcher_layout_focus)
             }
         layoutButton.contentDescription = description
-        val tint = if (layout == LauncherLayout.Focus) theme.accent else theme.foreground
-        layoutButton.imageTintList = ColorStateList.valueOf(tint)
+        layoutButton.tint(if (layout == LauncherLayout.Focus) theme.accent else theme.foreground)
     }
 
     private fun showAppMenu(anchor: View) {
@@ -410,29 +386,6 @@ class HomeActivity : Activity() {
         menu.show()
     }
 
-    private fun iconButton(drawable: Int, description: String, onClick: (View) -> Unit): ImageButton {
-        return ImageButton(this).apply {
-            setImageResource(drawable)
-            imageTintList = ColorStateList.valueOf(theme.foreground)
-            setBackgroundColor(0)
-            contentDescription = description
-            minimumWidth = unitPx
-            minimumHeight = unitPx
-            setOnClickListener(onClick)
-        }
-    }
-
-    private fun buttonParams(): LinearLayout.LayoutParams =
-        LinearLayout.LayoutParams(unitPx, unitPx).apply { marginStart = unitPx / 12 }
-
-    private fun inputBackground(): GradientDrawable =
-        GradientDrawable().apply {
-            setColor(theme.darkBackground)
-            cornerRadius = (unitPx / 6).toFloat()
-        }
-
-    private fun iconPx(): Int = (unitPx * 20 / UNIT_DP).coerceAtLeast(1)
-
     private fun buildWorkspaces(): View {
         workspaceCanvas =
             FrameLayout(this).apply {
@@ -453,12 +406,8 @@ class HomeActivity : Activity() {
         workspaceButtons.clear()
         visibleWorkspaces(workspaces, layout).forEach { workspace ->
             val button =
-                TextView(this).apply {
+                GridButton(this, style).apply {
                     text = workspace.name
-                    gravity = Gravity.CENTER
-                    minWidth = unitPx
-                    minHeight = unitPx
-                    textSize = 16f
                     contentDescription = getString(R.string.workspace_label, workspace.name)
                     setOnClickListener {
                         workspaces = workspaces.select(workspace.id)
@@ -474,7 +423,7 @@ class HomeActivity : Activity() {
         workspaceCanvas.contentDescription = getString(R.string.workspace_label, active.name)
         workspaceButtons.forEach { (id, button) ->
             val selected = id == workspaces.activeId
-            button.setTextColor(if (selected) theme.accent else theme.muted)
+            button.tint(if (selected) theme.accent else theme.muted)
         }
     }
 
