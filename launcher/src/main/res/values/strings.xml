@@ -15,5 +15,6 @@
     <string name="workspace_label">Workspace %1$s</string>
     <string name="sheet_back">Back</string>
     <string name="sheet_apps">Apps</string>
+    <string name="sheet_menu">Menu</string>
     <string name="sheet_search_empty">Type to search</string>
 </resources>

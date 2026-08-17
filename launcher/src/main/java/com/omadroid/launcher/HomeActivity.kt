@@ -19,7 +19,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 import com.omadroid.launcher.widget.GridButton
@@ -27,7 +26,11 @@ import com.omadroid.launcher.widget.GridChrome
 import com.omadroid.launcher.widget.GridField
 import com.omadroid.launcher.widget.GridIcon
 import com.omadroid.launcher.widget.GridIconButton
+import com.omadroid.launcher.widget.GridMenu
 import com.omadroid.launcher.widget.GridRow
+import com.omadroid.launcher.widget.MenuItem
+import com.omadroid.launcher.widget.MenuSection
+import com.omadroid.launcher.widget.MenuSpec
 import com.omadroid.launcher.widget.GridSheet
 import com.omadroid.launcher.widget.GridStyle
 import com.omadroid.launcher.widget.GridText
@@ -401,7 +404,7 @@ class HomeActivity : Activity() {
         NavRoute(ROUTE_SEARCH, getString(R.string.launcher_search))
 
     private fun menuRoute(): NavRoute =
-        NavRoute(ROUTE_MENU, getString(R.string.sheet_apps))
+        NavRoute(ROUTE_MENU, getString(R.string.sheet_menu))
 
     private fun openSheet(route: NavRoute) {
         if (sheet.isOpen) {
@@ -414,7 +417,7 @@ class HomeActivity : Activity() {
     private fun buildSheetPage(route: NavRoute): View {
         return when (route.id) {
             ROUTE_SEARCH -> buildSearchPage()
-            ROUTE_MENU -> buildAppsPage()
+            ROUTE_MENU -> buildMenuPage()
             else ->
                 GridText(this, style).apply {
                     text = route.title
@@ -450,60 +453,91 @@ class HomeActivity : Activity() {
                 style.innerPx,
             ).apply { topMargin = style.spacePx },
         )
-        val apps =
-            GridButton(this, style).apply {
-                text = getString(R.string.sheet_apps)
-                gravity = Gravity.CENTER_VERTICAL
-                setOnClickListener { sheet.push(menuRoute()) }
+        val links =
+            GridMenu(this, style).apply {
+                bind(
+                    MenuSpec(
+                        listOf(
+                            MenuSection(
+                                "",
+                                listOf(
+                                    MenuItem(
+                                        id = ROUTE_MENU,
+                                        title = getString(R.string.sheet_apps),
+                                        icon = IconGlyphs.APP,
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+                onItemClick = { sheet.push(menuRoute()) }
             }
         column.addView(
-            apps,
+            links,
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                style.innerPx,
-            ).apply { topMargin = style.spacePx },
+                0,
+                1f,
+            ),
         )
         return column
     }
 
-    private fun buildAppsPage(): View {
-        val apps = launchableApps()
-        val column =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
+    private fun buildMenuPage(): View {
+        val menu = GridMenu(this, style)
+        fun paint() {
+            menu.bind(menuSpec())
+        }
+        menu.onItemToggle = { item, on ->
+            if (item.id == ITEM_FOCUS) {
+                layout = if (on) LauncherLayout.Focus else LauncherLayout.Desktop
+                bindLayoutButton()
+                bindWorkspaces()
+                paint()
             }
-        apps.forEach { app ->
-            val row =
-                GridButton(this, style).apply {
-                    text = app.label
-                    gravity = Gravity.CENTER_VERTICAL
-                    setOnClickListener {
-                        launcherApps.startMainActivity(
-                            ComponentName(app.packageName, app.activityName),
-                            user,
-                            null,
-                            null,
-                        )
-                        sheet.dismiss()
-                    }
-                }
-            column.addView(
-                row,
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    style.innerPx,
-                ),
-            )
         }
-        return ScrollView(this).apply {
-            addView(
-                column,
-                ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                ),
-            )
+        menu.onItemClick = { item ->
+            val parts = item.id.split('/', limit = 2)
+            if (parts.size == 2) {
+                launcherApps.startMainActivity(
+                    ComponentName(parts[0], parts[1]),
+                    user,
+                    null,
+                    null,
+                )
+                sheet.dismiss()
+            }
         }
+        paint()
+        return menu
+    }
+
+    private fun menuSpec(): MenuSpec {
+        val apps =
+            launchableApps().map { app ->
+                MenuItem(
+                    id = "${app.packageName}/${app.activityName}",
+                    title = app.label,
+                    icon = IconGlyphs.APP,
+                )
+            }
+        return MenuSpec(
+            listOf(
+                MenuSection(
+                    getString(R.string.launcher_layout),
+                    listOf(
+                        MenuItem(
+                            id = ITEM_FOCUS,
+                            title = getString(R.string.launcher_layout_focus),
+                            icon = IconGlyphs.LAYOUT,
+                            toggled = layout == LauncherLayout.Focus,
+                        ),
+                    ),
+                ),
+                MenuSection(getString(R.string.sheet_apps), apps),
+            ),
+        )
     }
 
     private fun launchableApps(): List<LaunchableApp> {
@@ -566,5 +600,6 @@ class HomeActivity : Activity() {
         private const val STATE_WORKSPACE = "workspace"
         private const val ROUTE_SEARCH = "search"
         private const val ROUTE_MENU = "menu"
+        private const val ITEM_FOCUS = "focus"
     }
 }
