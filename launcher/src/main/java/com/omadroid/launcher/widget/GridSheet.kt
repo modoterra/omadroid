@@ -67,11 +67,12 @@ class GridSheet(
         animate().cancel()
         stack = NavStack.root(route)
         bind()
-        translationY = offscreenY()
+        translationY = 0f
+        translationX = offscreenX()
         visibility = VISIBLE
         post {
-            translationY = offscreenY()
-            animate().translationY(0f).setDuration(SLIDE_MS).start()
+            translationX = offscreenX()
+            animate().translationX(0f).setDuration(SLIDE_MS).start()
         }
         onChanged(stack)
     }
@@ -107,11 +108,11 @@ class GridSheet(
             return
         }
         animate()
-            .translationY(height.toFloat())
+            .translationX(offscreenX())
             .setDuration(SLIDE_MS)
             .withEndAction {
                 visibility = GONE
-                translationY = offscreenY()
+                translationX = offscreenX()
                 body.removeAllViews()
                 stack = NavStack()
                 onChanged(stack)
@@ -138,13 +139,15 @@ class GridSheet(
         )
     }
 
-    private fun offscreenY(): Float {
-        val measured = height
-        return if (measured > 0) {
-            measured.toFloat()
-        } else {
-            resources.displayMetrics.heightPixels.toFloat()
-        }
+    private fun offscreenX(): Float {
+        val measured = width
+        val span =
+            if (measured > 0) {
+                measured
+            } else {
+                resources.displayMetrics.widthPixels
+            }
+        return -span.toFloat()
     }
 
     companion object {
