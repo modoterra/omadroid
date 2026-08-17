@@ -4,7 +4,32 @@ An Omarchy-inspired OS on Android, for Omarchy.
 
 [Omarchy](https://github.com/basecamp/omarchy) is a beautiful, modern, opinionated Linux. Omadroid is that idea on a phone: stock AOSP, no Play Store, no Play services.
 
-This machine already runs Omarchy. This repository currently ships a local AOSP workbench so we can build and run the OS here.
+This repository is the source of the Omadroid product image and of every first-party plugin. AOSP is the base we compile against, the way Arch is under Omarchy. Google’s `sdk_phone64` zip is only a workbench, not the product.
+
+This machine already runs Omarchy.
+
+## Product image
+
+The product is `omadroid_x86_64`. It inherits the generic goldfish/ranchu phone ([sdk_phone64_x86_64](https://android.googlesource.com/device/generic/goldfish/+/refs/heads/main/64bitonly/product/sdk_phone64_x86_64.mk)), omits the stock `/product` apps and Launcher3, and installs `OmadroidLauncher` (`omadroid.home`) as HOME.
+
+AOSP stays a local `repo sync` ([download](https://source.android.com/docs/setup/download), [build](https://source.android.com/docs/setup/build/building)). Do not vendor that tree here.
+
+```bash
+repo init --partial-clone -b android-latest-release \
+  -u https://android.googlesource.com/platform/manifest
+repo sync -c -j8
+./scripts/prepare-aosp.sh --aosp /path/to/aosp
+```
+
+Then in the AOSP tree:
+
+```bash
+source build/envsetup.sh
+lunch omadroid_x86_64-aosp_current-userdebug
+m
+```
+
+`prepare-aosp.sh` links this repo to `vendor/modoterra/omadroid` and `device/modoterra/omadroid`. First-party plugins live in `shell/plugins/`. To have `repo sync` place the checkout itself, copy `device/local_manifests/omadroid.xml` into `<aosp>/.repo/local_manifests/`.
 
 ## Workbench
 
@@ -65,15 +90,14 @@ After the emulator window appears, from another terminal:
 
 | Path | Role |
 | --- | --- |
-| `sdk/` | `ANDROID_HOME` (cmdline-tools, emulator, platform-tools, system images) |
-| `avd/` | `ANDROID_AVD_HOME` (`omadroid.ini` and the disk) |
-| `.android/` | emulator user files |
-| `scripts/setup.sh` | install the workbench |
-| `scripts/start.sh` | boot the workbench |
-| `scripts/strip.sh` | hide stock product apps |
-| `scripts/install-launcher.sh` | build and set the Omadroid HOME app |
-| `scripts/lib.sh` | path and package-picking helpers |
-| `launcher/` | stock HOME app (`com.omadroid.launcher`) |
+| `device/` | lunch product, overlay, privapp allowlist |
+| `omadroid.mk` | `PRODUCT_PACKAGES` add/remove |
+| `shell/plugins/` | first-party plugins (`omadroid.home`, …) |
+| `launcher/` | HOME app sources (Gradle workbench + Soong `OmadroidLauncher`) |
+| `scripts/prepare-aosp.sh` | link this repo into an AOSP checkout |
+| `sdk/` | workbench `ANDROID_HOME` (gitignored) |
+| `avd/` | workbench AVD (gitignored) |
+| `.android/` | emulator user files (gitignored) |
 
 Those three data directories are gitignored.
 

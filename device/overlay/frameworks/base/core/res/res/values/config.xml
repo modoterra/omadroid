@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Recents stays in SystemUI until omadroid-shell owns it.
+         https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/res/res/values/config.xml -->
+    <string name="config_recentsComponentName" translatable="false">com.android.systemui/.recents.RecentsActivity</string>
+    <string name="config_secondaryHomePackage" translatable="false">com.omadroid.launcher</string>
+</resources>

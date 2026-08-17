@@ -2,16 +2,21 @@
 
 Omadroid is an Omarchy-inspired OS on Android, for Omarchy. See [basecamp/omarchy](https://github.com/basecamp/omarchy). This host already runs Omarchy.
 
-The local AOSP emulator in this repo is the workbench, not the product. Stock AOSP only: no Play Store, no Play services.
+This repository is the source of the product image and of every first-party plugin. AOSP is an external checkout, not vendored here.
+
+The host process is `omadroid-shell`. It is not wired yet. Until it is, `OmadroidLauncher` (`omadroid.home`) is the product HOME app.
+
+Stock AOSP only: no Play Store, no Play services.
 
 ## Commands
 
-- `./scripts/setup.sh` installs the SDK, emulator, AOSP system image, and `omadroid` AVD.
+- `./scripts/setup.sh` installs the workbench SDK, emulator, AOSP system image, and `omadroid` AVD.
 - `./scripts/start.sh` boots the workbench. Windowed boots pass `-fixed-scale`.
 - `./scripts/start.sh --headless` boots without a window.
-- `./scripts/strip.sh` disables stock product apps for user 0.
+- `./scripts/strip.sh` disables stock product apps for user 0 on the workbench image.
 - `./scripts/install-launcher.sh` builds `com.omadroid.launcher`, strips product apps, sets HOME, and disables Launcher3.
-- `./tests/lib.test.sh` runs parser tests. It does not download the SDK.
+- `./scripts/prepare-aosp.sh --aosp <tree>` links this repo into an AOSP checkout for `lunch omadroid_x86_64-aosp_current-userdebug`.
+- `./tests/lib.test.sh` runs parser tests. It does not download the SDK or AOSP.
 - `cd launcher && ./gradlew testDebugUnitTest` runs launcher unit tests.
 
 ## Guest
@@ -19,3 +24,9 @@ The local AOSP emulator in this repo is the workbench, not the product. Stock AO
 - Flavor must not mention google.
 - Packages must not include `com.android.vending` or `com.google.android.gms`.
 - The emulator window class is `Emulator`. On this Omarchy host it should float.
+
+## Product
+
+- Do not add Gallery, Dialer, QSB, or Launcher3 to `PRODUCT_PACKAGES`.
+- Do not remove SystemUI, Settings, or LatinIME until `omadroid-shell` replaces them.
+- First-party plugin ids use the `omadroid.` prefix and live in `shell/plugins/`.

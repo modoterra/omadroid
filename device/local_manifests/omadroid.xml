@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copy to <aosp>/.repo/local_manifests/omadroid.xml then repo sync.
+     prepare-aosp.sh is enough if this repo is already cloned elsewhere. -->
+<manifest>
+  <remote name="github" fetch="https://github.com/" />
+  <project
+      path="vendor/modoterra/omadroid"
+      name="modoterra/omadroid"
+      remote="github"
+      revision="main" />
+</manifest>

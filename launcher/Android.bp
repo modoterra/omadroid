@@ -1,0 +1,18 @@
+// Soong module for the product image. The Gradle project in this
+// directory is the workbench (adb install) build of the same sources.
+//
+// https://source.android.com/docs/setup/build/building
+
+android_app {
+    name: "OmadroidLauncher",
+    srcs: ["src/main/java/**/*.kt"],
+    resource_dirs: ["src/main/res"],
+    manifest: "src/main/AndroidManifest.xml",
+    platform_apis: true,
+    privileged: true,
+    system_ext_specific: true,
+    certificate: "platform",
+    dex_preopt: {
+        enabled: false,
+    },
+}

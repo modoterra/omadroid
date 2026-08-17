@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "omadroid.home",
+  "name": "Home",
+  "version": "0.1.0",
+  "kinds": ["home"],
+  "package": "com.omadroid.launcher",
+  "entryPoints": {
+    "home": "com.omadroid.launcher/.HomeActivity"
+  },
+  "soongModule": "OmadroidLauncher"
+}

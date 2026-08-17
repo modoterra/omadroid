@@ -158,3 +158,50 @@ omadroid_home_package() {
 omadroid_home_activity() {
   printf '%s\n' "com.omadroid.launcher/.HomeActivity"
 }
+
+omadroid_product_name() {
+  printf '%s\n' "omadroid_x86_64"
+}
+
+# lunch product_name-release_config-build_variant
+# https://source.android.com/docs/setup/build/building
+omadroid_lunch_combo() {
+  printf '%s\n' "$(omadroid_product_name)-aosp_current-userdebug"
+}
+
+# Soong/make module names omitted from the product after inheriting
+# goldfish sdk_phone64_x86_64. Keep SystemUI, Settings, LatinIME.
+omadroid_product_packages_remove() {
+  cat <<'EOF'
+Browser2
+Calendar
+Camera2
+Contacts
+DeskClock
+Gallery2
+Music
+QuickSearchBox
+messaging
+PhotoTable
+ThemePicker
+EasterEgg
+Launcher3QuickStep
+Dialer
+EOF
+}
+
+# First-party plugin ids from shell/plugins/*/manifest.json.
+# $1 is the repo root; defaults to the parent of scripts/.
+omadroid_first_party_plugin_ids() {
+  local root="${1:-}"
+  if [[ -z "$root" ]]; then
+    root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  fi
+  local manifest id
+  shopt -s nullglob
+  for manifest in "${root}/shell/plugins/"*/manifest.json; do
+    id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["id"])' "$manifest")"
+    printf '%s\n' "$id"
+  done
+  shopt -u nullglob
+}

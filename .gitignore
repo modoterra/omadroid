@@ -1,6 +1,7 @@
 /sdk/
 /avd/
 /.android/
+/aosp/
 /launcher/.gradle/
 /launcher/build/
 /launcher/local.properties

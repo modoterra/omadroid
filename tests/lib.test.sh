@@ -152,6 +152,44 @@ assert_eq "HOME package is the Omadroid launcher" \
   "com.omadroid.launcher" \
   "$(omadroid_home_package)"
 
+assert_eq "product name is omadroid_x86_64" \
+  "omadroid_x86_64" \
+  "$(omadroid_product_name)"
+
+assert_eq "lunch combo is the goldfish userdebug product" \
+  "omadroid_x86_64-aosp_current-userdebug" \
+  "$(omadroid_lunch_combo)"
+
+REMOVE="$(omadroid_product_packages_remove)"
+assert_eq "product removes Launcher3QuickStep" "Launcher3QuickStep" \
+  "$(printf '%s\n' "$REMOVE" | grep -Fx 'Launcher3QuickStep')"
+assert_eq "product removes Gallery2" "Gallery2" \
+  "$(printf '%s\n' "$REMOVE" | grep -Fx 'Gallery2')"
+assert_eq "product removes Dialer" "Dialer" \
+  "$(printf '%s\n' "$REMOVE" | grep -Fx 'Dialer')"
+assert_fail "product does not remove SystemUI" \
+  grep -Fxq 'SystemUI' <<<"$REMOVE"
+assert_fail "product does not remove Settings" \
+  grep -Fxq 'Settings' <<<"$REMOVE"
+assert_fail "product does not remove LatinIME" \
+  grep -Fxq 'LatinIME' <<<"$REMOVE"
+
+assert_eq "first-party plugins include omadroid.home" "omadroid.home" \
+  "$(omadroid_first_party_plugin_ids "$ROOT" | grep -Fx 'omadroid.home')"
+
+while IFS= read -r module || [[ -n "$module" ]]; do
+  [[ -n "$module" ]] || continue
+  if ! grep -q -w "$module" "$ROOT/omadroid.mk"; then
+    printf 'not ok  omadroid.mk lists remove module %s\n' "$module" >&2
+    FAILS=$((FAILS + 1))
+  else
+    printf 'ok  omadroid.mk lists remove module %s\n' "$module"
+  fi
+done < <(omadroid_product_packages_remove)
+
+assert_eq "AndroidProducts.mk names the x86_64 product" "omadroid_x86_64.mk" \
+  "$(grep -o 'omadroid_x86_64.mk' "$ROOT/device/AndroidProducts.mk" | head -1)"
+
 if [[ "$FAILS" -ne 0 ]]; then
   printf '%s test(s) failed\n' "$FAILS" >&2
   exit 1
