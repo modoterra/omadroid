@@ -5,13 +5,38 @@
 
 android_app {
     name: "OmadroidLauncher",
-    srcs: ["src/main/java/**/*.kt"],
+    srcs: [
+        "src/main/java/**/*.kt",
+        "../shell/lib/theme/**/*.kt",
+    ],
     resource_dirs: ["src/main/res"],
+    asset_dirs: ["themes"],
     manifest: "src/main/AndroidManifest.xml",
     platform_apis: true,
     privileged: true,
     system_ext_specific: true,
     certificate: "platform",
+    // inherit-product records goldfish packages as inherit tags.
+    // filter-out cannot see Gallery2/Dialer until those tags expand.
+    // overrides drops them after the product list is resolved.
+    overrides: [
+        "Browser2",
+        "Calendar",
+        "Camera2",
+        "Contacts",
+        "DeskClock",
+        "Gallery2",
+        "Music",
+        "QuickSearchBox",
+        "messaging",
+        "PhotoTable",
+        "ThemePicker",
+        "EasterEgg",
+        "Launcher3",
+        "Launcher3QuickStep",
+        "Dialer",
+        "Stk",
+    ],
     dex_preopt: {
         enabled: false,
     },

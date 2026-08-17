@@ -26,7 +26,9 @@ android {
     }
 
     sourceSets.getByName("main") {
+        kotlin.directories.add(layout.projectDirectory.dir("lib/theme").asFile.path)
         assets.directories.add(layout.projectDirectory.dir("plugins").asFile.path)
+        assets.directories.add(layout.projectDirectory.dir("themes").asFile.path)
     }
 
     testOptions {

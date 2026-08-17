@@ -4,20 +4,25 @@ import android.app.Application
 import android.content.res.AssetManager
 import android.util.Log
 import com.omadroid.shell.plugin.PluginRegistry
+import com.omadroid.theme.ThemeCatalog
+import com.omadroid.theme.ThemeColors
 import java.io.IOException
 
 class OmadroidShellApp : Application() {
     lateinit var plugins: PluginRegistry
         private set
+    lateinit var theme: ThemeColors
+        private set
 
     override fun onCreate() {
         super.onCreate()
+        theme = ThemeCatalog.load(assets)
         val texts = readPluginManifests(assets)
         if (texts.isEmpty()) {
             throw IllegalStateException("no plugin manifests in assets")
         }
         plugins = PluginRegistry.parseAll(texts)
-        Log.i(TAG, "loaded ${plugins.plugins.size} plugin(s)")
+        Log.i(TAG, "loaded ${plugins.plugins.size} plugin(s) theme=${theme.slug}")
     }
 
     companion object {

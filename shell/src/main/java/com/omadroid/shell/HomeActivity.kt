@@ -9,7 +9,9 @@ import android.util.Log
 class HomeActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val plugin = (application as OmadroidShellApp).plugins.holder(KIND_HOME)
+        val app = application as OmadroidShellApp
+        window.decorView.setBackgroundColor(app.theme.background)
+        val plugin = app.plugins.holder(KIND_HOME)
         val component = plugin?.entryPoint(KIND_HOME)?.let { ComponentName.unflattenFromString(it) }
         if (plugin == null || component == null) {
             Log.e(TAG, "no home plugin")

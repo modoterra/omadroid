@@ -100,6 +100,7 @@ After the emulator window appears, from another terminal:
 | `omadroid.mk` | `PRODUCT_PACKAGES` add/remove |
 | `shell/` | host process `omadroid-shell` (HOME; loads plugins) |
 | `shell/plugins/` | first-party plugins (`omadroid.home`, …) |
+| `shell/themes/` | Omarchy `colors.toml` hex palettes |
 | `launcher/` | HOME app sources (Gradle workbench + Soong `OmadroidLauncher`) |
 | `scripts/prepare-aosp.sh` | link this repo into an AOSP checkout |
 | `sdk/` | workbench `ANDROID_HOME` (gitignored) |

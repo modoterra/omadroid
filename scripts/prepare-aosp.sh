@@ -67,6 +67,10 @@ omadroid_stage_soong_app "$ROOT" "$vendor_dir" shell
 if [[ -d "${ROOT}/shell/plugins" ]]; then
   ln -sfn "${ROOT}/shell/plugins" "${vendor_dir}/shell/plugins"
 fi
+if [[ -d "${ROOT}/shell/themes" ]]; then
+  ln -sfn "${ROOT}/shell/themes" "${vendor_dir}/shell/themes"
+  ln -sfn "${ROOT}/shell/themes" "${vendor_dir}/launcher/themes"
+fi
 
 # Soong's finder does not descend into directory symlinks unless
 # ALLOW_BP_UNDER_SYMLINKS=true. Keep a real device/ directory so lunch

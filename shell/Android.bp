@@ -1,12 +1,15 @@
-// Host process. Not HOME. Plugins declare kinds; this module loads them.
+// Host process. HOME. Plugins declare kinds; this module loads them.
 //
 // https://source.android.com/docs/setup/build/building
 
 android_app {
     name: "OmadroidShell",
-    srcs: ["src/main/java/**/*.kt"],
+    srcs: [
+        "src/main/java/**/*.kt",
+        "lib/theme/**/*.kt",
+    ],
     resource_dirs: ["src/main/res"],
-    asset_dirs: ["plugins"],
+    asset_dirs: ["plugins", "themes"],
     manifest: "src/main/AndroidManifest.xml",
     platform_apis: true,
     privileged: true,

@@ -25,6 +25,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    sourceSets.getByName("main") {
+        kotlin.directories.add(layout.projectDirectory.dir("../shell/lib/theme").asFile.path)
+        assets.directories.add(layout.projectDirectory.dir("../shell/themes").asFile.path)
+    }
+
     testOptions {
         unitTests.isReturnDefaultValues = true
     }

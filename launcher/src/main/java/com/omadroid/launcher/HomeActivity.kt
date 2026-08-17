@@ -17,17 +17,22 @@ import android.widget.GridView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.omadroid.theme.ThemeCatalog
+import com.omadroid.theme.ThemeColors
 
 class HomeActivity : Activity() {
     private lateinit var launcherApps: LauncherApps
     private lateinit var grid: GridView
+    private lateinit var theme: ThemeColors
     private val user: UserHandle = Process.myUserHandle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         launcherApps = getSystemService(LauncherApps::class.java)
+        theme = ThemeCatalog.load(assets)
 
         grid = GridView(this).apply {
+            setBackgroundColor(theme.background)
             numColumns = 4
             stretchMode = GridView.STRETCH_COLUMN_WIDTH
             verticalSpacing = dp(20)
@@ -37,6 +42,7 @@ class HomeActivity : Activity() {
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
             contentDescription = getString(R.string.apps_grid)
         }
+        window.decorView.setBackgroundColor(theme.background)
         setContentView(grid)
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(
@@ -65,11 +71,12 @@ class HomeActivity : Activity() {
                 },
                 packageName,
             )
-        grid.adapter = AppAdapter(apps)
+        grid.adapter = AppAdapter(apps, theme)
     }
 
     private inner class AppAdapter(
         private val apps: List<LaunchableApp>,
+        private val theme: ThemeColors,
     ) : BaseAdapter() {
         override fun getCount(): Int = apps.size
 
@@ -98,7 +105,7 @@ class HomeActivity : Activity() {
                             id = LABEL_ID
                             gravity = Gravity.CENTER
                             textSize = 12f
-                            setTextColor(0xFFE8E4D9.toInt())
+                            setTextColor(theme.foreground)
                             maxLines = 2
                         }
                     addView(
