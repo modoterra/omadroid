@@ -3,62 +3,139 @@ package com.omadroid.launcher
 import android.app.Activity
 import android.content.ComponentName
 import android.content.pm.LauncherApps
+import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.os.UserHandle
-import android.window.OnBackInvokedCallback
-import android.window.OnBackInvokedDispatcher
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.GridView
-import android.widget.ImageView
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.PopupMenu
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import com.omadroid.theme.ThemeCatalog
 import com.omadroid.theme.ThemeColors
 
 class HomeActivity : Activity() {
     private lateinit var launcherApps: LauncherApps
-    private lateinit var grid: GridView
     private lateinit var theme: ThemeColors
+    private lateinit var layoutButton: ImageButton
+    private var layout: LauncherLayout = LauncherLayout.Desktop
     private val user: UserHandle = Process.myUserHandle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         launcherApps = getSystemService(LauncherApps::class.java)
         theme = ThemeCatalog.load(assets)
-
-        grid = GridView(this).apply {
-            setBackgroundColor(theme.background)
-            numColumns = 4
-            stretchMode = GridView.STRETCH_COLUMN_WIDTH
-            verticalSpacing = dp(20)
-            horizontalSpacing = dp(8)
-            setPadding(dp(16), dp(48), dp(16), dp(24))
-            clipToPadding = false
-            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-            contentDescription = getString(R.string.apps_grid)
+        if (savedInstanceState != null) {
+            layout = LauncherLayout.valueOf(
+                savedInstanceState.getString(STATE_LAYOUT, LauncherLayout.Desktop.name),
+            )
         }
         window.decorView.setBackgroundColor(theme.background)
-        setContentView(grid)
+        setContentView(buildChrome())
+        bindLayoutButton()
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(
                 OnBackInvokedDispatcher.PRIORITY_DEFAULT,
                 OnBackInvokedCallback { },
             )
         }
-        bindApps()
     }
 
-    override fun onResume() {
-        super.onResume()
-        bindApps()
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_LAYOUT, layout.name)
     }
 
-    private fun bindApps() {
+    private fun buildChrome(): View {
+        val root =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setBackgroundColor(theme.background)
+            }
+        val desktop =
+            FrameLayout(this).apply {
+                setBackgroundColor(theme.background)
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }
+        root.addView(
+            desktop,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
+            ),
+        )
+        root.addView(
+            buildLauncherBar(),
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+        return root
+    }
+
+    private fun buildLauncherBar(): View {
+        val bar =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setBackgroundColor(theme.lighterBackground)
+                val pad = dp(12)
+                setPadding(pad, pad, pad, pad + dp(8))
+                contentDescription = getString(R.string.app_name)
+            }
+        val field = EditText(this).apply {
+            hint = getString(R.string.launcher_search)
+            setHintTextColor(theme.muted)
+            setTextColor(theme.foreground)
+            setBackground(inputBackground())
+            setPadding(dp(14), dp(10), dp(14), dp(10))
+            imeOptions = EditorInfo.IME_ACTION_SEARCH
+            inputType = EditorInfo.TYPE_CLASS_TEXT
+            isSingleLine = true
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+        }
+        bar.addView(
+            field,
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dp(8)
+            },
+        )
+        layoutButton = iconButton(R.drawable.ic_layout, getString(R.string.launcher_layout)) {
+            layout = layout.next()
+            bindLayoutButton()
+        }
+        bar.addView(layoutButton, buttonParams())
+        val menuButton =
+            iconButton(R.drawable.ic_menu, getString(R.string.launcher_menu)) { button ->
+                showAppMenu(button)
+            }
+        bar.addView(menuButton, buttonParams())
+        return bar
+    }
+
+    private fun bindLayoutButton() {
+        val description =
+            when (layout) {
+                LauncherLayout.Desktop -> getString(R.string.launcher_layout_desktop)
+                LauncherLayout.Focus -> getString(R.string.launcher_layout_focus)
+            }
+        layoutButton.contentDescription = description
+        val tint = if (layout == LauncherLayout.Focus) theme.accent else theme.foreground
+        layoutButton.imageTintList = ColorStateList.valueOf(tint)
+    }
+
+    private fun showAppMenu(anchor: View) {
         val infos = launcherApps.getActivityList(null, user)
         val apps =
             visibleLaunchableApps(
@@ -71,74 +148,47 @@ class HomeActivity : Activity() {
                 },
                 packageName,
             )
-        grid.adapter = AppAdapter(apps, theme)
+        val menu = PopupMenu(this, anchor)
+        apps.forEachIndexed { index, app ->
+            menu.menu.add(0, index, index, app.label)
+        }
+        menu.setOnMenuItemClickListener { item ->
+            val app = apps[item.itemId]
+            launcherApps.startMainActivity(
+                ComponentName(app.packageName, app.activityName),
+                user,
+                null,
+                null,
+            )
+            true
+        }
+        menu.show()
     }
 
-    private inner class AppAdapter(
-        private val apps: List<LaunchableApp>,
-        private val theme: ThemeColors,
-    ) : BaseAdapter() {
-        override fun getCount(): Int = apps.size
-
-        override fun getItem(position: Int): LaunchableApp = apps[position]
-
-        override fun getItemId(position: Int): Long = position.toLong()
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val app = apps[position]
-            val column = (parent as GridView).let { it.width / it.numColumns.coerceAtLeast(1) }
-            val cell =
-                (convertView as? LinearLayout) ?: LinearLayout(this@HomeActivity).apply {
-                    orientation = LinearLayout.VERTICAL
-                    gravity = Gravity.CENTER_HORIZONTAL
-                    setPadding(dp(4), dp(8), dp(4), dp(8))
-                    val icon =
-                        ImageView(this@HomeActivity).apply {
-                            id = ICON_ID
-                            scaleType = ImageView.ScaleType.FIT_CENTER
-                            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                        }
-                    val size = dp(56)
-                    addView(icon, LinearLayout.LayoutParams(size, size))
-                    val label =
-                        TextView(this@HomeActivity).apply {
-                            id = LABEL_ID
-                            gravity = Gravity.CENTER
-                            textSize = 12f
-                            setTextColor(theme.foreground)
-                            maxLines = 2
-                        }
-                    addView(
-                        label,
-                        LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                        ).apply { topMargin = dp(8) },
-                    )
-                }
-            if (column > 0) {
-                cell.layoutParams = ViewGroup.LayoutParams(column, ViewGroup.LayoutParams.WRAP_CONTENT)
-            }
-
-            val component = ComponentName(app.packageName, app.activityName)
-            val info = launcherApps.getActivityList(app.packageName, user)
-                .firstOrNull { it.componentName == component }
-            val iconView = cell.findViewById<ImageView>(ICON_ID)
-            val labelView = cell.findViewById<TextView>(LABEL_ID)
-            iconView.setImageDrawable(info?.getIcon(0))
-            labelView.text = app.label
-            cell.contentDescription = app.label
-            cell.setOnClickListener {
-                launcherApps.startMainActivity(component, user, null, null)
-            }
-            return cell
+    private fun iconButton(drawable: Int, description: String, onClick: (View) -> Unit): ImageButton {
+        return ImageButton(this).apply {
+            setImageResource(drawable)
+            imageTintList = ColorStateList.valueOf(theme.foreground)
+            setBackgroundColor(0)
+            contentDescription = description
+            minimumWidth = dp(48)
+            minimumHeight = dp(48)
+            setOnClickListener(onClick)
         }
     }
+
+    private fun buttonParams(): LinearLayout.LayoutParams =
+        LinearLayout.LayoutParams(dp(48), dp(48)).apply { marginStart = dp(4) }
+
+    private fun inputBackground(): GradientDrawable =
+        GradientDrawable().apply {
+            setColor(theme.darkBackground)
+            cornerRadius = dp(8).toFloat()
+        }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     companion object {
-        private const val ICON_ID = 0x7f0a0001
-        private const val LABEL_ID = 0x7f0a0002
+        private const val STATE_LAYOUT = "launcher_layout"
     }
 }

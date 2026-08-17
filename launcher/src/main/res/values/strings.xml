@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Omadroid</string>
-    <string name="apps_grid">Applications</string>
+    <string name="launcher_search">Search</string>
+    <string name="launcher_layout">Layout</string>
+    <string name="launcher_menu">Menu</string>
+    <string name="launcher_layout_desktop">Desktop layout</string>
+    <string name="launcher_layout_focus">Focus layout</string>
 </resources>
