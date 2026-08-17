@@ -138,79 +138,136 @@ class HomeActivity : Activity() {
 
     private fun buildBar(): View {
         val bar =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
+            FrameLayout(this).apply {
                 setBackgroundColor(theme.lighterBackground)
                 val pad = dp(12)
                 setPadding(pad, pad + dp(4), pad, pad)
                 contentDescription = getString(R.string.bar_name)
             }
-        dateView =
-            TextView(this).apply {
-                setTextColor(theme.foreground)
-                textSize = 14f
-                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-            }
-        bar.addView(
-            dateView,
-            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
-        )
-        wifiIcon =
-            ImageView(this).apply {
-                setImageResource(R.drawable.ic_wifi)
-                imageTintList = ColorStateList.valueOf(theme.foreground)
-                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-            }
-        bar.addView(wifiIcon, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(10) })
-        batteryIcon =
-            ImageView(this).apply {
-                setImageResource(R.drawable.ic_battery)
-                imageTintList = ColorStateList.valueOf(theme.foreground)
-                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-            }
-        bar.addView(batteryIcon, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(4) })
-        batteryView =
-            TextView(this).apply {
-                setTextColor(theme.foreground)
-                textSize = 14f
-                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
-            }
-        bar.addView(
-            batteryView,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
+        val arranged = arrangeBar(defaultBarPlacements)
+        bar.addView(buildAnchor(BarAnchor.Left, arranged), matchBar())
+        bar.addView(buildAnchor(BarAnchor.Center, arranged), matchBar())
+        bar.addView(buildAnchor(BarAnchor.Right, arranged), matchBar())
         return bar
+    }
+
+    private fun matchBar(): FrameLayout.LayoutParams =
+        FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
+
+    private fun buildAnchor(
+        anchor: BarAnchor,
+        arranged: Map<BarAnchor, List<BarModule>>,
+    ): View {
+        val gravity =
+            when (anchor) {
+                BarAnchor.Left -> Gravity.START or Gravity.CENTER_VERTICAL
+                BarAnchor.Center -> Gravity.CENTER
+                BarAnchor.Right -> Gravity.END or Gravity.CENTER_VERTICAL
+            }
+        val row =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                this.gravity = gravity
+                contentDescription =
+                    when (anchor) {
+                        BarAnchor.Left -> getString(R.string.bar_anchor_left)
+                        BarAnchor.Center -> getString(R.string.bar_anchor_center)
+                        BarAnchor.Right -> getString(R.string.bar_anchor_right)
+                    }
+            }
+        arranged.getValue(anchor).forEach { module ->
+            row.addView(buildBarModule(module))
+        }
+        return row
+    }
+
+    private fun buildBarModule(module: BarModule): View {
+        return when (module) {
+            BarModule.Date -> {
+                dateView =
+                    TextView(this).apply {
+                        setTextColor(theme.foreground)
+                        textSize = 14f
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                    }
+                dateView
+            }
+            BarModule.Wifi -> {
+                wifiIcon =
+                    ImageView(this).apply {
+                        setImageResource(R.drawable.ic_wifi)
+                        imageTintList = ColorStateList.valueOf(theme.foreground)
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                    }
+                LinearLayout(this).apply {
+                    gravity = Gravity.CENTER_VERTICAL
+                    addView(wifiIcon, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(10) })
+                }
+            }
+            BarModule.Battery -> {
+                batteryIcon =
+                    ImageView(this).apply {
+                        setImageResource(R.drawable.ic_battery)
+                        imageTintList = ColorStateList.valueOf(theme.foreground)
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    }
+                batteryView =
+                    TextView(this).apply {
+                        setTextColor(theme.foreground)
+                        textSize = 14f
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                    }
+                LinearLayout(this).apply {
+                    gravity = Gravity.CENTER_VERTICAL
+                    addView(batteryIcon, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(4) })
+                    addView(
+                        batteryView,
+                        LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ),
+                    )
+                }
+            }
+        }
     }
 
     private fun bindBar() {
         val status = currentBarStatus()
-        dateView.text = status.dateLabel
-        dateView.contentDescription = status.dateLabel
-        wifiIcon.contentDescription = wifiContentDescription(status.wifi)
-        wifiIcon.imageTintList =
-            ColorStateList.valueOf(
-                when (status.wifi) {
-                    WifiState.Connected -> theme.green
-                    WifiState.Disconnected -> theme.muted
-                    WifiState.Off -> theme.red
-                },
-            )
-        wifiIcon.alpha = if (status.wifi == WifiState.Off) 0.45f else 1f
-        batteryView.text = status.batteryLabel
-        batteryView.contentDescription =
-            batteryContentDescription(status.batteryPercent, status.charging, Locale.getDefault())
-        val batteryColor =
-            when {
-                status.charging -> theme.green
-                status.batteryPercent <= 20 -> theme.red
-                else -> theme.foreground
+        if (::dateView.isInitialized) {
+            dateView.text = status.dateLabel
+            dateView.contentDescription = status.dateLabel
+        }
+        if (::wifiIcon.isInitialized) {
+            wifiIcon.contentDescription = wifiContentDescription(status.wifi)
+            wifiIcon.imageTintList =
+                ColorStateList.valueOf(
+                    when (status.wifi) {
+                        WifiState.Connected -> theme.green
+                        WifiState.Disconnected -> theme.muted
+                        WifiState.Off -> theme.red
+                    },
+                )
+            wifiIcon.alpha = if (status.wifi == WifiState.Off) 0.45f else 1f
+        }
+        if (::batteryView.isInitialized) {
+            batteryView.text = status.batteryLabel
+            batteryView.contentDescription =
+                batteryContentDescription(status.batteryPercent, status.charging, Locale.getDefault())
+            val batteryColor =
+                when {
+                    status.charging -> theme.green
+                    status.batteryPercent <= 20 -> theme.red
+                    else -> theme.foreground
+                }
+            batteryView.setTextColor(batteryColor)
+            if (::batteryIcon.isInitialized) {
+                batteryIcon.imageTintList = ColorStateList.valueOf(batteryColor)
             }
-        batteryView.setTextColor(batteryColor)
-        batteryIcon.imageTintList = ColorStateList.valueOf(batteryColor)
+        }
     }
 
     private fun currentBarStatus(): BarStatus {
