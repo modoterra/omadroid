@@ -43,6 +43,10 @@ class HomeActivity : Activity() {
     private lateinit var batteryIcon: ImageView
     private lateinit var batteryView: TextView
     private var layout: LauncherLayout = LauncherLayout.Desktop
+    private var workspaces: Workspaces = defaultWorkspaces()
+    private lateinit var workspaceSwitcher: LinearLayout
+    private lateinit var workspaceCanvas: FrameLayout
+    private val workspaceButtons = mutableMapOf<String, TextView>()
     private val user: UserHandle = Process.myUserHandle()
     private val barReceiver =
         object : BroadcastReceiver() {
@@ -59,11 +63,15 @@ class HomeActivity : Activity() {
             layout = LauncherLayout.valueOf(
                 savedInstanceState.getString(STATE_LAYOUT, LauncherLayout.Desktop.name),
             )
+            workspaces = workspaces.select(
+                savedInstanceState.getString(STATE_WORKSPACE, workspaces.activeId) ?: workspaces.activeId,
+            )
         }
         window.decorView.setBackgroundColor(theme.background)
         setContentView(buildChrome())
         bindLayoutButton()
         bindBar()
+        bindWorkspaces()
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(
                 OnBackInvokedDispatcher.PRIORITY_DEFAULT,
@@ -75,6 +83,7 @@ class HomeActivity : Activity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(STATE_LAYOUT, layout.name)
+        outState.putString(STATE_WORKSPACE, workspaces.activeId)
     }
 
     override fun onStart() {
@@ -113,13 +122,8 @@ class HomeActivity : Activity() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ),
         )
-        val desktop =
-            FrameLayout(this).apply {
-                setBackgroundColor(theme.background)
-                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-            }
         root.addView(
-            desktop,
+            buildWorkspaces(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 0,
@@ -332,6 +336,7 @@ class HomeActivity : Activity() {
         layoutButton = iconButton(R.drawable.ic_layout, getString(R.string.launcher_layout)) {
             layout = layout.next()
             bindLayoutButton()
+            bindWorkspaces()
         }
         bar.addView(layoutButton, buttonParams())
         val menuButton =
@@ -406,7 +411,75 @@ class HomeActivity : Activity() {
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
+    private fun buildWorkspaces(): View {
+        val module =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setBackgroundColor(theme.background)
+                contentDescription = getString(R.string.workspaces_name)
+            }
+        workspaceSwitcher =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER
+                val pad = dp(8)
+                setPadding(pad, pad, pad, 0)
+            }
+        module.addView(
+            workspaceSwitcher,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+        workspaceCanvas =
+            FrameLayout(this).apply {
+                setBackgroundColor(theme.background)
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+            }
+        module.addView(
+            workspaceCanvas,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
+            ),
+        )
+        return module
+    }
+
+    private fun bindWorkspaces() {
+        workspaceSwitcher.removeAllViews()
+        workspaceButtons.clear()
+        visibleWorkspaces(workspaces, layout).forEach { workspace ->
+            val button =
+                TextView(this).apply {
+                    text = workspace.name
+                    gravity = Gravity.CENTER
+                    minWidth = dp(48)
+                    minHeight = dp(48)
+                    textSize = 16f
+                    contentDescription = getString(R.string.workspace_label, workspace.name)
+                    setOnClickListener {
+                        workspaces = workspaces.select(workspace.id)
+                        bindWorkspaces()
+                    }
+                }
+            workspaceButtons[workspace.id] = button
+            workspaceSwitcher.addView(button)
+        }
+        workspaceSwitcher.visibility =
+            if (layout == LauncherLayout.Focus) View.GONE else View.VISIBLE
+        val active = workspaces.active
+        workspaceCanvas.contentDescription = getString(R.string.workspace_label, active.name)
+        workspaceButtons.forEach { (id, button) ->
+            val selected = id == workspaces.activeId
+            button.setTextColor(if (selected) theme.accent else theme.muted)
+        }
+    }
+
     companion object {
         private const val STATE_LAYOUT = "launcher_layout"
+        private const val STATE_WORKSPACE = "workspace"
     }
 }
