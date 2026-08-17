@@ -13,14 +13,16 @@ class GridStyleTest {
         assertTrue(style.textSizePx < style.cellPx)
         assertTrue(style.iconPx < style.cellPx)
         assertTrue(style.insetPx * 2 + style.textSizePx <= style.cellPx)
+        assertTrue(style.fieldHeightPx <= style.cellPx)
+        assertTrue(style.cornerPx < style.cellPx / 4f)
     }
 
     @Test
     fun scalesWithTheUnit() {
         val style = GridStyle(unitPx = 96, colors = stubColors())
         assertEquals(16, style.insetPx)
-        assertEquals(40, style.iconPx)
-        assertEquals(28, style.textSizePx)
+        assertEquals(96 * 20 / com.omadroid.launcher.UNIT_DP, style.iconPx)
+        assertEquals(96 * 14 / com.omadroid.launcher.UNIT_DP, style.textSizePx)
     }
 
     private fun stubColors(): ThemeColors =

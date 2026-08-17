@@ -1,7 +1,7 @@
 package com.omadroid.launcher
 
 /** One cell. Length is still TBD; one unit is one line of text or one control. */
-const val UNIT_DP = 48
+const val UNIT_DP = 32
 
 enum class Attach {
     Top,

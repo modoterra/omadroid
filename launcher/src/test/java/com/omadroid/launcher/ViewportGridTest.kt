@@ -47,6 +47,6 @@ class ViewportGridTest {
 
     @Test
     fun unitLengthUsesThePendingConstant() {
-        assertEquals(96, unitLengthPx(2f))
+        assertEquals(UNIT_DP * 2, unitLengthPx(2f))
     }
 }

@@ -13,5 +13,6 @@ data class GridStyle(
     val tightGapPx: Int = (unitPx / 12).coerceAtLeast(1)
     val iconPx: Int = (unitPx * 20 / UNIT_DP).coerceAtLeast(1)
     val textSizePx: Int = (unitPx * 14 / UNIT_DP).coerceAtLeast(1)
-    val cornerPx: Float = (unitPx / 6).toFloat()
+    val cornerPx: Float = (unitPx / 16).toFloat().coerceAtLeast(2f)
+    val fieldHeightPx: Int = (textSizePx + insetPx * 2).coerceAtMost(cellPx)
 }

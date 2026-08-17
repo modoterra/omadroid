@@ -44,14 +44,19 @@ class GridText(context: Context, style: GridStyle) : TextView(context) {
     }
 }
 
-class GridButton(context: Context, style: GridStyle) : TextView(context) {
+class GridButton(context: Context, style: GridStyle, compact: Boolean = false) : TextView(context) {
     init {
         setTextColor(style.colors.foreground)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, style.textSizePx.toFloat())
         includeFontPadding = false
         gravity = Gravity.CENTER
-        minWidth = style.cellPx
         minHeight = style.cellPx
+        if (compact) {
+            minWidth = 0
+            setPadding(style.insetPx, 0, style.insetPx, 0)
+        } else {
+            minWidth = style.cellPx
+        }
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
     }
 }
@@ -96,7 +101,7 @@ class GridField(context: Context, style: GridStyle) : EditText(context, null, 0)
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
         minHeight = 0
         minimumHeight = 0
-        maxHeight = style.cellPx
+        maxHeight = style.fieldHeightPx
     }
 }
 
@@ -111,7 +116,7 @@ fun gridIconParams(style: GridStyle, marginEnd: Int = 0): LinearLayout.LayoutPar
     }
 
 fun gridStretchParams(style: GridStyle, marginEnd: Int = 0): LinearLayout.LayoutParams =
-    LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
+    LinearLayout.LayoutParams(0, style.fieldHeightPx, 1f).apply {
         this.marginEnd = marginEnd
     }
 

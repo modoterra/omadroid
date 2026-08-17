@@ -406,7 +406,7 @@ class HomeActivity : Activity() {
         workspaceButtons.clear()
         visibleWorkspaces(workspaces, layout).forEach { workspace ->
             val button =
-                GridButton(this, style).apply {
+                GridButton(this, style, compact = true).apply {
                     text = workspace.name
                     contentDescription = getString(R.string.workspace_label, workspace.name)
                     setOnClickListener {
