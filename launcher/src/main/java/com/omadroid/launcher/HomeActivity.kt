@@ -568,7 +568,7 @@ class HomeActivity : Activity() {
                 MenuSpec(
                     listOf(
                         MenuSection(
-                            getString(R.string.sheet_theme),
+                            "",
                             slugs.map { slug ->
                                 MenuItem(
                                     id = slug,
