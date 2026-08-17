@@ -23,6 +23,9 @@ class GridMenu(
         isFillViewport = true
         overScrollMode = OVER_SCROLL_NEVER
         isNestedScrollingEnabled = false
+        isFocusable = true
+        isFocusableInTouchMode = true
+        descendantFocusability = FOCUS_BLOCK_DESCENDANTS
         addView(
             column,
             ViewGroup.LayoutParams(
@@ -32,7 +35,12 @@ class GridMenu(
         )
     }
 
+    override fun requestChildFocus(child: View?, focused: View?) {
+        // Mouse hover/wheel must not scroll a row into view.
+    }
+
     fun bind(spec: MenuSpec) {
+        val y = scrollY
         column.removeAllViews()
         spec.sections.forEach { section ->
             if (section.header.isNotEmpty()) {
@@ -80,6 +88,7 @@ class GridMenu(
                 }
             }
         }
+        post { scrollTo(0, y) }
     }
 
     private fun handleClick(item: MenuItem) {
@@ -102,7 +111,8 @@ class GridMenuRow(
         gravity = Gravity.CENTER_VERTICAL
         setPadding(style.spacePx, 0, style.spacePx, 0)
         isClickable = true
-        isFocusable = true
+        isFocusable = false
+        isFocusableInTouchMode = false
         contentDescription = item.title
         minimumHeight = style.cellPx
         if (item.icon != null) {
