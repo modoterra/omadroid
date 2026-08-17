@@ -13,6 +13,8 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.UserHandle
 import android.view.Gravity
 import android.view.View
@@ -36,6 +38,7 @@ import com.omadroid.launcher.widget.MenuSection
 import com.omadroid.launcher.widget.MenuSpec
 import com.omadroid.launcher.widget.GridSheet
 import com.omadroid.launcher.widget.GridStyle
+import com.omadroid.launcher.widget.ThemeWipe
 import com.omadroid.launcher.widget.GridText
 import com.omadroid.launcher.widget.IconGlyphs
 import com.omadroid.launcher.widget.gridCellParams
@@ -72,6 +75,7 @@ class HomeActivity : Activity() {
     private lateinit var workspaceSwitcher: GridGroup
     private lateinit var workspaceCanvas: GridPane
     private lateinit var sheet: GridSheet
+    private var themeWipe: ThemeWipe? = null
     private val workspaceButtons = mutableMapOf<String, GridButton>()
     private val user: UserHandle = Process.myUserHandle()
     private val barReceiver =
@@ -614,9 +618,10 @@ class HomeActivity : Activity() {
     }
 
     private fun activateTheme(slug: String) {
-        if (slug == theme.slug) {
+        if (slug == theme.slug || themeWipe != null) {
             return
         }
+        val snapshot = snapshot(root)
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putString(PREF_THEME, slug).apply()
         theme = ThemeCatalog.load(assets, slug)
         style = GridStyle(unitPx, theme)
@@ -626,6 +631,30 @@ class HomeActivity : Activity() {
         bindLayoutButton()
         bindBar()
         bindWorkspaces()
+        if (snapshot != null) {
+            val wipe = ThemeWipe(this)
+            themeWipe = wipe
+            root.add(
+                wipe,
+                FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                ),
+            )
+            wipe.play(snapshot) {
+                root.removeView(wipe)
+                themeWipe = null
+            }
+        }
+    }
+
+    private fun snapshot(view: View): Bitmap? {
+        if (view.width <= 0 || view.height <= 0) {
+            return null
+        }
+        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        view.draw(Canvas(bitmap))
+        return bitmap
     }
 
     private fun launchableApps(): List<LaunchableApp> {
