@@ -23,10 +23,13 @@ import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 import com.omadroid.launcher.widget.GridButton
 import com.omadroid.launcher.widget.GridChrome
+import com.omadroid.launcher.widget.GridColumn
 import com.omadroid.launcher.widget.GridField
+import com.omadroid.launcher.widget.GridGroup
 import com.omadroid.launcher.widget.GridIcon
 import com.omadroid.launcher.widget.GridIconButton
 import com.omadroid.launcher.widget.GridMenu
+import com.omadroid.launcher.widget.GridPane
 import com.omadroid.launcher.widget.GridRow
 import com.omadroid.launcher.widget.MenuItem
 import com.omadroid.launcher.widget.MenuSection
@@ -52,6 +55,13 @@ class HomeActivity : Activity() {
     private var themeListY: Int = 0
     private lateinit var grid: GridMetrics
     private lateinit var slots: Map<BuiltinModule, AllocatedSpace>
+    private lateinit var root: GridPane
+    private lateinit var chrome: GridColumn
+    private lateinit var bar: GridChrome
+    private lateinit var dock: GridRow
+    private lateinit var dockField: GridField
+    private lateinit var menuButton: GridIconButton
+    private var themeMenu: GridMenu? = null
     private lateinit var layoutButton: GridIconButton
     private lateinit var dateView: GridText
     private lateinit var wifiIcon: GridIcon
@@ -59,8 +69,8 @@ class HomeActivity : Activity() {
     private lateinit var batteryView: GridText
     private var layout: LauncherLayout = LauncherLayout.Desktop
     private var workspaces: Workspaces = defaultWorkspaces()
-    private lateinit var workspaceSwitcher: LinearLayout
-    private lateinit var workspaceCanvas: FrameLayout
+    private lateinit var workspaceSwitcher: GridGroup
+    private lateinit var workspaceCanvas: GridPane
     private lateinit var sheet: GridSheet
     private val workspaceButtons = mutableMapOf<String, GridButton>()
     private val user: UserHandle = Process.myUserHandle()
@@ -135,19 +145,15 @@ class HomeActivity : Activity() {
     }
 
     private fun buildChrome(): View {
-        val chrome =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                setBackgroundColor(theme.background)
-            }
-        chrome.addView(
+        chrome = GridColumn(this, style)
+        chrome.add(
             buildBar(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 slots.getValue(BuiltinModule.Bar).pixels.height,
             ),
         )
-        chrome.addView(
+        chrome.add(
             buildWorkspaces(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -155,15 +161,15 @@ class HomeActivity : Activity() {
                 1f,
             ),
         )
-        chrome.addView(
+        chrome.add(
             buildDock(),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 slots.getValue(BuiltinModule.Dock).pixels.height,
             ),
         )
-        val root = FrameLayout(this)
-        root.addView(
+        root = GridPane(this, style)
+        root.add(
             chrome,
             FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -174,7 +180,7 @@ class HomeActivity : Activity() {
             GridSheet(this, style).apply {
                 render = { route -> buildSheetPage(route) }
             }
-        root.addView(
+        root.add(
             sheet,
             FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -185,14 +191,14 @@ class HomeActivity : Activity() {
     }
 
     private fun buildBar(): View {
-        val bar =
+        bar =
             GridChrome(this, style).apply {
                 contentDescription = getString(R.string.bar_name)
             }
         val arranged = arrangeBar(composeBarPlacements(builtinModules(), defaultBarPlacements))
-        bar.addView(buildAnchor(BarAnchor.Left, arranged), matchBar())
-        bar.addView(buildAnchor(BarAnchor.Center, arranged), matchBar())
-        bar.addView(buildAnchor(BarAnchor.Right, arranged), matchBar())
+        bar.add(buildAnchor(BarAnchor.Left, arranged), matchBar())
+        bar.add(buildAnchor(BarAnchor.Center, arranged), matchBar())
+        bar.add(buildAnchor(BarAnchor.Right, arranged), matchBar())
         return bar
     }
 
@@ -213,8 +219,7 @@ class HomeActivity : Activity() {
                 BarAnchor.Right -> Gravity.END or Gravity.CENTER_VERTICAL
             }
         val row =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
+            GridGroup(this, style).apply {
                 this.gravity = gravity
                 contentDescription =
                     when (anchor) {
@@ -224,7 +229,13 @@ class HomeActivity : Activity() {
                     }
             }
         arranged.getValue(anchor).forEach { module ->
-            row.addView(buildBarModule(module))
+            row.add(
+                buildBarModule(module),
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                ),
+            )
         }
         return row
     }
@@ -240,9 +251,9 @@ class HomeActivity : Activity() {
                     GridIcon(this, style).apply {
                         text = IconGlyphs.WIFI
                     }
-                LinearLayout(this).apply {
+                GridGroup(this, style).apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    addView(wifiIcon, gridIconParams(style))
+                    add(wifiIcon, gridIconParams(style))
                 }
             }
             BarModule.Battery -> {
@@ -252,10 +263,10 @@ class HomeActivity : Activity() {
                         importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                     }
                 batteryView = GridText(this, style)
-                LinearLayout(this).apply {
+                GridGroup(this, style).apply {
                     gravity = Gravity.CENTER_VERTICAL
-                    addView(batteryIcon, gridIconParams(style))
-                    addView(
+                    add(batteryIcon, gridIconParams(style))
+                    add(
                         batteryView,
                         LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -266,8 +277,7 @@ class HomeActivity : Activity() {
             }
             BarModule.WorkspaceSwitcher -> {
                 workspaceSwitcher =
-                    LinearLayout(this).apply {
-                        orientation = LinearLayout.HORIZONTAL
+                    GridGroup(this, style).apply {
                         gravity = Gravity.CENTER_VERTICAL
                         contentDescription = getString(R.string.workspaces_name)
                     }
@@ -344,18 +354,18 @@ class HomeActivity : Activity() {
     }
 
     private fun buildDock(): View {
-        val dock =
+        dock =
             GridRow(this, style).apply {
                 contentDescription = getString(R.string.dock_name)
             }
-        val field =
+        dockField =
             GridField(this, style).apply {
                 hint = getString(R.string.launcher_search)
                 isFocusable = false
                 isClickable = true
                 setOnClickListener { openSheet(searchRoute()) }
             }
-        dock.addView(field, gridStretchParams(style))
+        dock.add(dockField, gridStretchParams(style))
         layoutButton =
             GridIconButton(this, style).apply {
                 text = IconGlyphs.LAYOUT
@@ -366,14 +376,14 @@ class HomeActivity : Activity() {
                     bindWorkspaces()
                 }
             }
-        dock.addView(layoutButton, gridCellParams(style))
-        val menuButton =
+        dock.add(layoutButton, gridCellParams(style))
+        menuButton =
             GridIconButton(this, style).apply {
                 text = IconGlyphs.MENU
                 contentDescription = getString(R.string.launcher_menu)
                 setOnClickListener { openSheet(menuRoute()) }
             }
-        dock.addView(menuButton, gridCellParams(style))
+        dock.add(menuButton, gridCellParams(style))
         return dock
     }
 
@@ -563,33 +573,34 @@ class HomeActivity : Activity() {
 
     private fun buildThemePage(): View {
         val menu = GridMenu(this, style)
-        fun paint() {
-            val slugs = ThemeCatalog.slugs(assets)
-            menu.bind(
-                MenuSpec(
-                    listOf(
-                        MenuSection(
-                            "",
-                            slugs.map { slug ->
-                                MenuItem(
-                                    id = slug,
-                                    title = ThemeCatalog.displayName(slug),
-                                    selected = slug == theme.slug,
-                                )
-                            },
-                        ),
-                    ),
-                ),
-            )
-        }
+        themeMenu = menu
         menu.setOnScrollChangeListener { _, _, y, _, _ -> themeListY = y }
         menu.onItemClick = { item ->
             themeListY = menu.scrollY
             activateTheme(item.id)
         }
-        paint()
-        menu.post { menu.scrollTo(0, themeListY) }
+        paintThemeMenu(menu)
         return menu
+    }
+
+    private fun paintThemeMenu(menu: GridMenu) {
+        val slugs = ThemeCatalog.slugs(assets)
+        menu.bind(
+            MenuSpec(
+                listOf(
+                    MenuSection(
+                        "",
+                        slugs.map { slug ->
+                            MenuItem(
+                                id = slug,
+                                title = ThemeCatalog.displayName(slug),
+                                selected = slug == theme.slug,
+                            )
+                        },
+                    ),
+                ),
+            ),
+        )
     }
 
     private fun loadSavedTheme(): ThemeColors {
@@ -610,11 +621,11 @@ class HomeActivity : Activity() {
         theme = ThemeCatalog.load(assets, slug)
         style = GridStyle(unitPx, theme)
         window.decorView.setBackgroundColor(theme.background)
-        setContentView(buildChrome())
+        root.style(style)
+        themeMenu?.let { paintThemeMenu(it) }
         bindLayoutButton()
         bindBar()
         bindWorkspaces()
-        sheet.restore(NavStack.root(menuRoute()).push(themeRoute()))
     }
 
     private fun launchableApps(): List<LaunchableApp> {
@@ -633,8 +644,7 @@ class HomeActivity : Activity() {
 
     private fun buildWorkspaces(): View {
         workspaceCanvas =
-            FrameLayout(this).apply {
-                setBackgroundColor(theme.background)
+            GridPane(this, style).apply {
                 contentDescription = getString(R.string.workspaces_name)
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
             }
@@ -647,7 +657,7 @@ class HomeActivity : Activity() {
                 getString(R.string.workspace_label, workspaces.active.name)
             return
         }
-        workspaceSwitcher.removeAllViews()
+        workspaceSwitcher.reset()
         workspaceButtons.clear()
         visibleWorkspaces(workspaces, layout).forEach { workspace ->
             val button =
@@ -660,7 +670,7 @@ class HomeActivity : Activity() {
                     }
                 }
             workspaceButtons[workspace.id] = button
-            workspaceSwitcher.addView(button, gridCellParams(style))
+            workspaceSwitcher.add(button, gridCellParams(style))
         }
         workspaceSwitcher.visibility =
             if (layout == LauncherLayout.Focus) View.GONE else View.VISIBLE

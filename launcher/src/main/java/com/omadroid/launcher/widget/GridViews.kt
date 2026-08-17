@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -13,93 +14,154 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 
-class GridChrome(context: Context, style: GridStyle) : FrameLayout(context) {
+class GridChrome(context: Context, private var style: GridStyle) : FrameLayout(context), Node {
+    private val host = NodeHost()
+
+    override val nodes: List<Node>
+        get() = host.nodes
+
     init {
-        setBackgroundColor(style.colors.lighterBackground)
-        setPadding(style.spacePx, style.spacePx, style.spacePx, style.spacePx)
-        minimumHeight = style.cellPx
+        style(style)
+    }
+
+    fun add(child: View, params: LayoutParams) {
+        if (child is Node) {
+            host.add(child)
+        }
+        addView(child, params)
+    }
+
+    override fun style(next: GridStyle) {
+        style = next
+        setBackgroundColor(next.colors.lighterBackground)
+        setPadding(next.spacePx, next.spacePx, next.spacePx, next.spacePx)
+        minimumHeight = next.cellPx
+        host.style(next)
     }
 }
 
-class GridRow(context: Context, style: GridStyle) : LinearLayout(context) {
+class GridRow(context: Context, private var style: GridStyle) : LinearLayout(context), Node {
+    private val host = NodeHost()
+
+    override val nodes: List<Node>
+        get() = host.nodes
+
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
-        setBackgroundColor(style.colors.lighterBackground)
-        setPadding(style.spacePx, style.spacePx, style.spacePx, style.spacePx)
-        minimumHeight = style.cellPx
+        style(style)
+    }
+
+    fun add(child: View, params: ViewGroup.LayoutParams) {
+        if (child is Node) {
+            host.add(child)
+        }
+        addView(child, params)
+    }
+
+    override fun style(next: GridStyle) {
+        style = next
+        setBackgroundColor(next.colors.lighterBackground)
+        setPadding(next.spacePx, next.spacePx, next.spacePx, next.spacePx)
+        minimumHeight = next.cellPx
+        host.style(next)
     }
 }
 
-class GridText(context: Context, style: GridStyle) : TextView(context) {
+class GridText(context: Context, private var style: GridStyle) : TextView(context), Node {
+    override val nodes: List<Node>
+        get() = emptyList()
+
     init {
         typeface = IconFonts.ui(context)
-        setTextColor(style.colors.foreground)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.textSizePx.toFloat())
         includeFontPadding = false
         gravity = Gravity.CENTER
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
-        minHeight = style.innerPx
-        setPadding(style.spacePx, style.spacePx, style.spacePx, style.spacePx)
+        style(style)
+    }
+
+    override fun style(next: GridStyle) {
+        style = next
+        setTextColor(next.colors.foreground)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, next.textSizePx.toFloat())
+        minHeight = next.innerPx
+        setPadding(next.spacePx, next.spacePx, next.spacePx, next.spacePx)
     }
 }
 
-class GridButton(context: Context, style: GridStyle) : TextView(context) {
+class GridButton(context: Context, private var style: GridStyle) : TextView(context), Node {
+    override val nodes: List<Node>
+        get() = emptyList()
+
     init {
         typeface = IconFonts.ui(context)
-        setTextColor(style.colors.foreground)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.textSizePx.toFloat())
         includeFontPadding = false
         gravity = Gravity.CENTER
-        minWidth = style.innerPx
-        minHeight = style.innerPx
-        setPadding(style.spacePx, style.spacePx, style.spacePx, style.spacePx)
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        style(style)
+    }
+
+    override fun style(next: GridStyle) {
+        style = next
+        setTextColor(next.colors.foreground)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, next.textSizePx.toFloat())
+        minWidth = next.innerPx
+        minHeight = next.innerPx
+        setPadding(next.spacePx, next.spacePx, next.spacePx, next.spacePx)
     }
 }
 
-class GridIcon(context: Context, style: GridStyle) : TextView(context) {
+class GridIcon(context: Context, private var style: GridStyle) : TextView(context), Node {
+    override val nodes: List<Node>
+        get() = emptyList()
+
     init {
         typeface = IconFonts.ui(context)
-        setTextColor(style.colors.foreground)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.iconPx.toFloat())
         includeFontPadding = false
         gravity = Gravity.CENTER
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
-        minWidth = style.innerPx
-        minHeight = style.innerPx
         setPadding(0, 0, 0, 0)
+        style(style)
+    }
+
+    override fun style(next: GridStyle) {
+        style = next
+        setTextColor(next.colors.foreground)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, next.iconPx.toFloat())
+        minWidth = next.innerPx
+        minHeight = next.innerPx
     }
 }
 
-class GridIconButton(context: Context, style: GridStyle) : TextView(context) {
+class GridIconButton(context: Context, private var style: GridStyle) : TextView(context), Node {
+    override val nodes: List<Node>
+        get() = emptyList()
+
     init {
         typeface = IconFonts.ui(context)
-        setTextColor(style.colors.foreground)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.iconPx.toFloat())
         includeFontPadding = false
         gravity = Gravity.CENTER
         setBackgroundColor(0)
-        minWidth = style.innerPx
-        minHeight = style.innerPx
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
         setPadding(0, 0, 0, 0)
+        style(style)
+    }
+
+    override fun style(next: GridStyle) {
+        style = next
+        setTextColor(next.colors.foreground)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, next.iconPx.toFloat())
+        minWidth = next.innerPx
+        minHeight = next.innerPx
     }
 }
 
-class GridField(context: Context, style: GridStyle) : EditText(context, null, 0) {
+class GridField(context: Context, private var style: GridStyle) : EditText(context, null, 0), Node {
+    override val nodes: List<Node>
+        get() = emptyList()
+
     init {
         typeface = IconFonts.ui(context)
-        setHintTextColor(style.colors.muted)
-        setTextColor(style.colors.foreground)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, style.textSizePx.toFloat())
-        setBackground(
-            GradientDrawable().apply {
-                setColor(style.colors.darkBackground)
-                cornerRadius = style.cornerPx
-            },
-        )
-        setPadding(style.spacePx, style.spacePx, style.spacePx, style.spacePx)
         imeOptions = EditorInfo.IME_ACTION_SEARCH
         inputType = EditorInfo.TYPE_CLASS_TEXT
         isSingleLine = true
@@ -108,7 +170,22 @@ class GridField(context: Context, style: GridStyle) : EditText(context, null, 0)
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
         minHeight = 0
         minimumHeight = 0
-        maxHeight = style.innerPx
+        style(style)
+    }
+
+    override fun style(next: GridStyle) {
+        style = next
+        setHintTextColor(next.colors.muted)
+        setTextColor(next.colors.foreground)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, next.textSizePx.toFloat())
+        setBackground(
+            GradientDrawable().apply {
+                setColor(next.colors.darkBackground)
+                cornerRadius = next.cornerPx
+            },
+        )
+        setPadding(next.spacePx, next.spacePx, next.spacePx, next.spacePx)
+        maxHeight = next.innerPx
     }
 }
 

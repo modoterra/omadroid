@@ -12,15 +12,19 @@ import android.widget.ScrollView
 
 class GridMenu(
     context: Context,
-    private val style: GridStyle,
-) : ScrollView(context) {
+    private var style: GridStyle,
+) : ScrollView(context), Node {
     var onItemClick: (MenuItem) -> Unit = {}
     var onItemToggle: (MenuItem, Boolean) -> Unit = { _, _ -> }
 
+    private val host = NodeHost()
     private val column =
         LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
         }
+
+    override val nodes: List<Node>
+        get() = host.nodes
 
     init {
         isFillViewport = true
@@ -37,6 +41,11 @@ class GridMenu(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ),
         )
+    }
+
+    override fun style(next: GridStyle) {
+        style = next
+        host.style(next)
     }
 
     override fun requestChildFocus(child: View?, focused: View?) {
@@ -67,6 +76,7 @@ class GridMenu(
 
     fun bind(spec: MenuSpec) {
         val y = scrollY
+        host.clear()
         column.removeAllViews()
         spec.sections.forEach { section ->
             if (section.header.isNotEmpty()) {
@@ -77,6 +87,7 @@ class GridMenu(
                         gravity = Gravity.CENTER_VERTICAL
                         contentDescription = section.header
                     }
+                host.add(header)
                 column.addView(
                     header,
                     LinearLayout.LayoutParams(
@@ -86,10 +97,13 @@ class GridMenu(
                 )
             }
             section.items.forEachIndexed { index, item ->
-                column.addView(
+                val row =
                     GridMenuRow(context, style, item).apply {
                         setOnClickListener { handleClick(item) }
-                    },
+                    }
+                host.add(row)
+                column.addView(
+                    row,
                     LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         style.cellPx,
@@ -131,7 +145,12 @@ class GridMenuRow(
     context: Context,
     style: GridStyle,
     item: MenuItem,
-) : LinearLayout(context) {
+) : LinearLayout(context), Node {
+    private val host = NodeHost()
+
+    override val nodes: List<Node>
+        get() = host.nodes
+
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
@@ -147,6 +166,7 @@ class GridMenuRow(
                     text = item.icon
                     importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                 }
+            host.add(icon)
             addView(icon, LinearLayout.LayoutParams(style.innerPx, style.innerPx))
         }
         val label =
@@ -155,6 +175,7 @@ class GridMenuRow(
                 gravity = Gravity.CENTER_VERTICAL
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             }
+        host.add(label)
         addView(
             label,
             LinearLayout.LayoutParams(0, style.innerPx, 1f).apply {
@@ -188,5 +209,11 @@ class GridMenuRow(
                 )
             }
         }
+    }
+
+    override fun style(next: GridStyle) {
+        setPadding(next.spacePx, 0, next.spacePx, 0)
+        minimumHeight = next.cellPx
+        host.style(next)
     }
 }
