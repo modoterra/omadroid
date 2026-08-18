@@ -50,12 +50,11 @@ object OmadroidTheme {
         val normalized = normalizeSlug(slug)
         writePrefs(context, normalized)
         val values = ContentValues().apply { put(COLUMN_SLUG, normalized) }
-        try {
-            context.contentResolver.update(uri(), values, null, null)
-        } catch (_: IllegalArgumentException) {
+        withoutThemeProvider {
             try {
+                context.contentResolver.update(uri(), values, null, null)
+            } catch (_: IllegalArgumentException) {
                 context.contentResolver.notifyChange(uri(), null)
-            } catch (_: Exception) {
             }
         }
     }
@@ -77,7 +76,18 @@ object OmadroidTheme {
                     onChange()
                 }
             }
-        context.contentResolver.registerContentObserver(uri(), false, observer)
+        withoutThemeProvider {
+            context.contentResolver.registerContentObserver(uri(), false, observer)
+        }
         return observer
+    }
+
+    /** Overlay guests may not have registered the theme provider. */
+    internal fun withoutThemeProvider(block: () -> Unit) {
+        try {
+            block()
+        } catch (_: SecurityException) {
+        } catch (_: IllegalArgumentException) {
+        }
     }
 }

@@ -16,4 +16,14 @@ class OmadroidThemeTest {
         assertEquals("gruvbox", OmadroidTheme.normalizeSlug("gruvbox"))
         assertEquals("catppuccin-latte", OmadroidTheme.normalizeSlug(" catppuccin-latte "))
     }
+
+    @Test
+    fun missingProviderDoesNotEscape() {
+        OmadroidTheme.withoutThemeProvider {
+            throw SecurityException("Failed to find provider com.omadroid.theme")
+        }
+        OmadroidTheme.withoutThemeProvider {
+            throw IllegalArgumentException("Unknown URI")
+        }
+    }
 }
