@@ -3,8 +3,11 @@ package com.omadroid.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -101,7 +104,41 @@ fun Menu(
 private fun MenuRow(item: MenuItem) {
     val style = LocalGridStyle.current
     val density = LocalDensity.current
-    Stack(Direction.Horizontal, Modifier.height(with(density) { style.cellPx.toDp() })) {
+    val titleH = with(density) { style.cellPx.toDp() }
+    if (item.swatches.isEmpty()) {
+        TitleRow(item, titleH)
+        return
+    }
+    val gap = with(density) { style.spacePx.toDp() }
+    Column(Modifier.fillMaxWidth()) {
+        TitleRow(item, titleH)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(titleH)
+                .padding(start = gap, end = gap, bottom = gap),
+            horizontalArrangement = Arrangement.spacedBy(gap),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            item.swatches.forEach { color ->
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(Color(color)),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TitleRow(
+    item: MenuItem,
+    height: androidx.compose.ui.unit.Dp,
+) {
+    val style = LocalGridStyle.current
+    Stack(Direction.Horizontal, Modifier.height(height)) {
         if (item.icon != null) {
             Node(Slot.square) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -6,6 +6,7 @@ data class MenuItem(
     val icon: String? = null,
     val toggled: Boolean? = null,
     val selected: Boolean = false,
+    val swatches: List<Int> = emptyList(),
 )
 
 data class MenuSection(

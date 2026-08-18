@@ -25,6 +25,8 @@ data class ThemeColors(
     val magenta: Int,
     val brown: Int,
 ) {
+    fun previewSwatches(): List<Int> =
+        listOf(background, foreground, accent, red, yellow, green, cyan, blue, magenta)
     companion object {
         const val DEFAULT_SLUG = "tokyo-night"
 

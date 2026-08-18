@@ -437,6 +437,12 @@ internal fun themeSpec(context: Context, theme: ThemeColors): MenuSpec {
                         id = slug,
                         title = ThemeCatalog.displayName(slug),
                         selected = slug == theme.slug,
+                        swatches =
+                            try {
+                                ThemeCatalog.load(context.assets, slug).previewSwatches()
+                            } catch (_: com.omadroid.theme.ThemeColorsException) {
+                                emptyList()
+                            },
                     )
                 },
             ),
