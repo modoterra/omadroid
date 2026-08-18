@@ -16,10 +16,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -93,7 +96,15 @@ fun Home(
 ) {
     val context = LocalContext.current
     val sheetProgress = rememberSheetProgress(state.sheet.isOpen)
-    Compose(state.style) {
+    var wallpaper by remember { mutableStateOf<ImageBitmap?>(null) }
+    val slug = state.style.colors.slug
+    LaunchedEffect(slug) {
+        wallpaper =
+            withContext(Dispatchers.IO) {
+                loadThemeBackground(context.assets, slug)
+            }
+    }
+    Compose(state.style, wallpaper = wallpaper) {
         Box(Modifier.fillMaxSize()) {
             val backScale = 1f - sheetProgress.value * (1f - SHEET_BACK_SCALE)
             Box(
@@ -182,7 +193,7 @@ private fun Bar(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(state.style.colors.lighterBackground))
+            .background(Color(state.style.colors.lighterBackground).copy(alpha = 0.86f))
             .semantics { contentDescription = context.getString(R.string.bar_name) },
     ) {
         BarAnchor.entries.forEach { anchor ->
@@ -352,7 +363,7 @@ private fun Dock(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(style.colors.lighterBackground))
+            .background(Color(style.colors.lighterBackground).copy(alpha = 0.86f))
             .semantics { contentDescription = context.getString(R.string.dock_name) },
     ) {
         Stack(Direction.Horizontal, gap = true, pad = false) {

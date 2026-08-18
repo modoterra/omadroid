@@ -32,4 +32,20 @@ object ThemeCatalog {
             }
         }.sorted()
     }
+
+    fun backgroundFiles(names: Array<String>?): List<String> =
+        names
+            ?.filter { name ->
+                val lower = name.lowercase(Locale.US)
+                !name.startsWith(".") &&
+                    name != "omarchy.png" &&
+                    (lower.endsWith(".jpg") ||
+                        lower.endsWith(".jpeg") ||
+                        lower.endsWith(".png") ||
+                        lower.endsWith(".webp"))
+            }
+            ?.sorted()
+            ?: emptyList()
+
+    fun backgroundAsset(slug: String, file: String): String = "$slug/backgrounds/$file"
 }

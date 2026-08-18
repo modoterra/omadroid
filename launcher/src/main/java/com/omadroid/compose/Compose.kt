@@ -1,5 +1,6 @@
 package com.omadroid.compose
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import com.omadroid.launcher.widget.GridStyle
 
 /**
@@ -24,17 +27,22 @@ val LocalGridStyle =
 fun Compose(
     style: GridStyle,
     modifier: Modifier = Modifier,
+    wallpaper: ImageBitmap? = null,
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(
         LocalGridStyle provides style,
         LocalOverscrollFactory provides NoOverscrollFactory,
     ) {
-        Box(
-            modifier
-                .fillMaxSize()
-                .background(Color(style.colors.background)),
-        ) {
+        Box(modifier.fillMaxSize().background(Color(style.colors.background))) {
+            if (wallpaper != null) {
+                Image(
+                    bitmap = wallpaper,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            }
             content()
         }
     }
