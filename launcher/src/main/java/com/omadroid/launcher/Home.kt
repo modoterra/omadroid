@@ -141,9 +141,11 @@ fun Home(
                         Bar(state, wallpaper, screenHeight, onSelectWorkspace)
                     }
                     Node(Slot.grow()) {
+                        val inset = with(LocalDensity.current) { state.style.workspaceInsetPx.toDp() }
                         Box(
                             Modifier
                                 .fillMaxSize()
+                                .padding(inset)
                                 .semantics {
                                     contentDescription =
                                         context.getString(
@@ -242,7 +244,9 @@ private fun ChromePlate(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val style = LocalGridStyle.current
-    val canBlur = Build.VERSION.SDK_INT >= 31
+    val density = LocalDensity.current
+    val canBlur = Build.VERSION.SDK_INT >= 31 && style.chromeBlurPx > 0
+    val fill = Color(style.colors.lighterBackground)
     Box(
         Modifier
             .fillMaxSize()
@@ -258,21 +262,15 @@ private fun ChromePlate(
                         .fillMaxWidth()
                         .height(screenHeight)
                         .align(align)
-                        .blur(20.dp),
+                        .blur(with(density) { style.chromeBlurPx.toDp() }),
                 contentScale = ContentScale.Crop,
             )
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color(style.colors.lighterBackground).copy(alpha = 0.42f)),
-            )
-        } else {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color(style.colors.lighterBackground).copy(alpha = 0.94f)),
-            )
         }
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(fill.copy(alpha = if (canBlur) style.chromeFillAlpha else 1f)),
+        )
         content()
     }
 }

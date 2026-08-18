@@ -15,4 +15,10 @@ data class GridStyle(
     val captionSizePx: Int = (unitPx * 12 / UNIT_DP).coerceAtLeast(1)
     val iconPx: Int = textSizePx
     val cornerPx: Float = 0f
+    /** Gap between the workspace and the bar, dock, and screen edges. */
+    val workspaceInsetPx: Int = spacePx * 2
+    /** Blur radius for wallpaper sampled under bar and dock. */
+    val chromeBlurPx: Int = (unitPx / 2).coerceAtLeast(1)
+    /** Theme fill over that blur. 1f is a solid theme plate. */
+    val chromeFillAlpha: Float = 0.9f
 }

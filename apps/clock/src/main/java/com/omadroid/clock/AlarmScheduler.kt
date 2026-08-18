@@ -55,7 +55,8 @@ class AlarmScheduler(private val context: Context) {
 
     private fun pending(id: Int): PendingIntent {
         val intent =
-            Intent(context, AlarmReceiver::class.java).apply {
+            Intent().apply {
+                setClassName("com.omadroid.clock", "com.omadroid.clock.AlarmReceiver")
                 action = ACTION_FIRE
                 putExtra(EXTRA_ALARM_ID, id)
             }

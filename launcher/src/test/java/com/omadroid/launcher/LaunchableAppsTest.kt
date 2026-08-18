@@ -42,4 +42,13 @@ class LaunchableAppsTest {
         assertEquals(false, isLaunchId("focus"))
         assertEquals(false, isLaunchId("/ClockActivity"))
     }
+
+    @Test
+    fun hostedPackageReadsTheAppId() {
+        assertEquals(
+            "com.omadroid.clock",
+            hostedPackage("com.omadroid.clock/com.omadroid.clock.ClockActivity"),
+        )
+        assertEquals(null, hostedPackage("theme"))
+    }
 }

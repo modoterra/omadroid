@@ -58,6 +58,12 @@ object IconGlyphs {
     const val SEARCH = "\uF002"
     const val COMMAND = "\uF120"
     const val CLOSE = "\uF00D"
+    const val PLUS = "\uF067"
+    const val TRASH = "\uF1F8"
+    const val PENCIL = "\uF040"
+    const val PHONE = "\uF095"
+    const val ENVELOPE = "\uF0E0"
+    const val USER = "\uF007"
 
     fun battery(percent: Int, charging: Boolean): String {
         if (charging) {

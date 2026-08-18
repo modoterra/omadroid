@@ -31,7 +31,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import com.omadroid.compose.Compose
 import com.omadroid.compose.Direction
 import com.omadroid.compose.IconButton
 import com.omadroid.compose.LocalGridStyle
@@ -41,8 +40,7 @@ import com.omadroid.compose.Slot
 import com.omadroid.compose.Spacer
 import com.omadroid.compose.Stack
 import com.omadroid.compose.Text
-import com.omadroid.gallery.widget.GridStyle
-import com.omadroid.gallery.widget.IconGlyphs
+import com.omadroid.launcher.widget.IconGlyphs
 import java.time.ZoneId
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +48,6 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun GalleryApp(
-    style: GridStyle,
     permitted: Boolean,
     images: List<MediaImage>,
     nav: GalleryNav,
@@ -60,8 +57,7 @@ fun GalleryApp(
     onBack: () -> Unit,
 ) {
     val albums = remember(images) { MediaImages.albums(images) }
-    Compose(style) {
-        when {
+    when {
             !permitted -> PermissionPane(onRequestPermission)
             images.isEmpty() -> EmptyPane()
             else ->
@@ -89,7 +85,6 @@ fun GalleryApp(
                         ViewerPane(image = image, onBack = onBack)
                     }
                 }
-        }
     }
 }
 

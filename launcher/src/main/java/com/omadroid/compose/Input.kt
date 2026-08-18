@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import com.omadroid.launcher.widget.IconGlyphs
 
@@ -53,6 +54,8 @@ fun StackScope.Input(
     autoFocus: Boolean = false,
     expanded: Boolean = true,
     description: String = hint,
+    imeAction: ImeAction = ImeAction.Search,
+    keyboardType: KeyboardType = KeyboardType.Text,
     onClick: (() -> Unit)? = null,
     onFocus: (() -> Unit)? = null,
     onSubmit: (() -> Unit)? = null,
@@ -68,6 +71,8 @@ fun StackScope.Input(
             autoFocus = autoFocus,
             expanded = expanded,
             description = description,
+            imeAction = imeAction,
+            keyboardType = keyboardType,
             onClick = onClick,
             onFocus = onFocus,
             onSubmit = onSubmit,
@@ -88,6 +93,8 @@ fun InputWell(
     expanded: Boolean = true,
     description: String = hint,
     wellAlpha: Float = 1f,
+    imeAction: ImeAction = ImeAction.Search,
+    keyboardType: KeyboardType = KeyboardType.Text,
     onClick: (() -> Unit)? = null,
     onFocus: (() -> Unit)? = null,
     onSubmit: (() -> Unit)? = null,
@@ -200,9 +207,16 @@ fun InputWell(
                                             }
                                         },
                                 textStyle = textStyle,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardOptions =
+                                    KeyboardOptions(
+                                        imeAction = imeAction,
+                                        keyboardType = keyboardType,
+                                    ),
                                 keyboardActions =
-                                    KeyboardActions(onSearch = { onSubmit?.invoke() }),
+                                    KeyboardActions(
+                                        onSearch = { onSubmit?.invoke() },
+                                        onDone = { onSubmit?.invoke() },
+                                    ),
                                 singleLine = true,
                                 cursorBrush = SolidColor(Color(style.colors.accent)),
                                 interactionSource = interaction,

@@ -14,8 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.omadroid.gallery.widget.GridStyle
-import com.omadroid.gallery.widget.unitLengthPx
+import com.omadroid.launcher.widget.GridStyle
 import com.omadroid.theme.OmadroidTheme
 import com.omadroid.theme.ThemeColors
 
@@ -43,8 +42,8 @@ class GalleryActivity : ComponentActivity() {
         applySelectedTheme()
         hideSystemBars()
         setContent {
+            com.omadroid.compose.Compose(style) {
             GalleryApp(
-                style = style,
                 permitted = permitted,
                 images = images,
                 nav = nav,
@@ -53,6 +52,7 @@ class GalleryActivity : ComponentActivity() {
                 onOpenImage = { imageId -> nav = nav.push(GalleryRoute.Viewer(imageId)) },
                 onBack = { onGalleryBack() },
             )
+            }
         }
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(
@@ -130,7 +130,7 @@ class GalleryActivity : ComponentActivity() {
             } catch (_: com.omadroid.theme.ThemeColorsException) {
                 placeholderTheme()
             }
-        style = GridStyle(unitLengthPx(resources.displayMetrics.density), theme)
+        style = GridStyle((32 * resources.displayMetrics.density).toInt().coerceAtLeast(1), theme)
         window.decorView.setBackgroundColor(theme.background)
     }
 }

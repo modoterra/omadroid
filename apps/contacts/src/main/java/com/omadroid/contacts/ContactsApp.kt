@@ -48,6 +48,14 @@ import com.omadroid.compose.Text
 import com.omadroid.launcher.widget.GridStyle
 import com.omadroid.launcher.widget.IconGlyphs
 
+sealed class ContactsScreen {
+    data object List : ContactsScreen()
+
+    data class Detail(val contactId: Long) : ContactsScreen()
+
+    data class Edit(val contactId: Long?) : ContactsScreen()
+}
+
 @Composable
 fun ContactsApp(
     style: GridStyle,

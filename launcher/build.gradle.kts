@@ -32,6 +32,7 @@ android {
 
     sourceSets.getByName("main") {
         kotlin.directories.add(layout.projectDirectory.dir("../shell/lib/theme").asFile.path)
+        kotlin.directories.add(layout.buildDirectory.dir("generated/hostedApps").get().asFile.path)
         assets.directories.add(layout.projectDirectory.dir("../shell/themes").asFile.path)
         assets.directories.add(layout.buildDirectory.dir("generated/pluginAssets").get().asFile.path)
     }
@@ -48,8 +49,30 @@ val stagePluginAssets by tasks.registering(Copy::class) {
     into(layout.buildDirectory.dir("generated/pluginAssets/plugins"))
 }
 
+val stageHostedApps by tasks.registering(Copy::class) {
+    from(layout.projectDirectory.dir("../apps/clock/src/main/java")) {
+        include("com/omadroid/clock/*.kt")
+        exclude(
+            "**/ClockActivity.kt",
+            "**/AlarmFireActivity.kt",
+            "**/AlarmReceiver.kt",
+            "**/AlarmNotifier.kt",
+            "**/AlarmTone.kt",
+        )
+    }
+    from(layout.projectDirectory.dir("../apps/contacts/src/main/java")) {
+        include("com/omadroid/contacts/*.kt")
+        exclude("**/ContactsActivity.kt")
+    }
+    from(layout.projectDirectory.dir("../apps/gallery/src/main/java")) {
+        include("com/omadroid/gallery/*.kt")
+        exclude("**/GalleryActivity.kt")
+    }
+    into(layout.buildDirectory.dir("generated/hostedApps"))
+}
+
 tasks.named("preBuild") {
-    dependsOn(stagePluginAssets)
+    dependsOn(stagePluginAssets, stageHostedApps)
 }
 
 dependencies {

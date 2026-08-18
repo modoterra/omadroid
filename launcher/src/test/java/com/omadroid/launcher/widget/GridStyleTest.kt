@@ -19,6 +19,9 @@ class GridStyleTest {
         assertEquals(12, style.captionSizePx)
         assertTrue(style.captionSizePx < style.textSizePx)
         assertEquals(style.textSizePx, style.iconPx)
+        assertEquals(8, style.workspaceInsetPx)
+        assertEquals(16, style.chromeBlurPx)
+        assertEquals(0.9f, style.chromeFillAlpha)
     }
 
     @Test

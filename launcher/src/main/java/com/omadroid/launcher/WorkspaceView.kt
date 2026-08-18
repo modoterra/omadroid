@@ -23,6 +23,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import com.omadroid.clock.ClockHost
 import com.omadroid.compose.Direction
 import com.omadroid.compose.Glyph
 import com.omadroid.compose.LocalGridStyle
@@ -32,6 +33,8 @@ import com.omadroid.compose.Slot
 import com.omadroid.compose.Spacer
 import com.omadroid.compose.Stack
 import com.omadroid.compose.Text
+import com.omadroid.contacts.ContactsHost
+import com.omadroid.gallery.GalleryHost
 import com.omadroid.launcher.widget.IconGlyphs
 
 @Composable
@@ -67,7 +70,7 @@ private fun DwindleBranch(
     when (node) {
         is DwindleNode.Leaf -> {
             val client = byId[node.id] ?: return
-            WorkspaceTile(client, onClick = { onClientClick(client) })
+            WorkspaceTile(client, onSelect = { onClientClick(client) })
         }
         is DwindleNode.Split -> {
             val direction =
@@ -131,7 +134,7 @@ private fun ScrollingWorkspace(
                         .width(pageDp)
                         .fillMaxHeight(),
                 ) {
-                    WorkspaceTile(client, onClick = { onClientClick(client) })
+                    WorkspaceTile(client, onSelect = { onClientClick(client) })
                 }
             }
         }
@@ -179,30 +182,47 @@ private fun ScrollingWorkspace(
 private fun WorkspaceTile(
     client: WorkspaceClient,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
+    onSelect: () -> Unit,
 ) {
     val style = LocalGridStyle.current
+    val hosted = hostedPackage(client.launchId)
     Box(
         modifier
             .fillMaxSize()
-            .background(Color(style.colors.lighterBackground))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
+            .background(Color(style.colors.background))
             .semantics { contentDescription = client.title },
-        contentAlignment = Alignment.Center,
     ) {
-        Stack(Direction.Vertical, gap = true, pad = false) {
-            Spacer(Slot.grow())
-            Node(Slot.fit) {
-                Glyph(IconGlyphs.APP)
-            }
-            Node(Slot.fit) {
-                Text(client.title)
-            }
-            Spacer(Slot.grow())
+        when (hosted) {
+            "com.omadroid.clock" -> key(client.id) { ClockHost() }
+            "com.omadroid.contacts" -> key(client.id) { ContactsHost() }
+            "com.omadroid.gallery" -> key(client.id) { GalleryHost() }
+            else ->
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onSelect,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Stack(Direction.Vertical, gap = true, pad = false) {
+                        Spacer(Slot.grow())
+                        Node(Slot.fit) {
+                            Glyph(IconGlyphs.APP)
+                        }
+                        Node(Slot.fit) {
+                            Text(client.title)
+                        }
+                        Spacer(Slot.grow())
+                    }
+                }
         }
     }
+}
+
+internal fun hostedPackage(launchId: String): String? {
+    val pkg = launchId.substringBefore('/', "")
+    return pkg.ifEmpty { null }
 }

@@ -239,14 +239,6 @@ class ContactsActivity : ComponentActivity() {
     }
 }
 
-sealed class ContactsScreen {
-    data object List : ContactsScreen()
-
-    data class Detail(val contactId: Long) : ContactsScreen()
-
-    data class Edit(val contactId: Long?) : ContactsScreen()
-}
-
 private fun placeholderTheme(): ThemeColors =
     ThemeColors(
         slug = ThemeColors.DEFAULT_SLUG,

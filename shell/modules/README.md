@@ -16,7 +16,9 @@ userland and load through `omadroid-shell`.
 Modules register `CommandItem`s on `ModuleSpec.commands`. The dock Command palette fuzzy-searches that list. The workspace switcher registers each workspace.
 
 One unit is a square. Every pad and margin is the same length
-(`spacePx` = unit/8). Corners are square. The unit length is still
+(`spacePx` = unit/8). Workspace inset, chrome blur, and chrome fill
+are on `GridStyle` (`workspaceInsetPx`, `chromeBlurPx`,
+`chromeFillAlpha`). Corners are square. The unit length is still
 TBD (`UNIT_DP`). The Grid gives leftover pixels to the Fill slot.
 
 A module may contribute placements to another module. The workspace

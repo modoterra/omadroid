@@ -1,6 +1,29 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("com.android.application") version "9.3.0"
     id("org.jetbrains.kotlin.plugin.compose") version "2.2.10"
+}
+
+val sharedUi = layout.buildDirectory.dir("generated/omadroidUi")
+val syncSharedUi by tasks.registering(Copy::class) {
+    from(layout.projectDirectory.dir("../../launcher/src/main/java")) {
+        include(
+            "com/omadroid/compose/Compose.kt",
+            "com/omadroid/compose/Input.kt",
+            "com/omadroid/compose/Overscroll.kt",
+            "com/omadroid/compose/Slot.kt",
+            "com/omadroid/compose/Stack.kt",
+            "com/omadroid/compose/Widgets.kt",
+            "com/omadroid/launcher/widget/GridStyle.kt",
+            "com/omadroid/launcher/widget/IconFonts.kt",
+        )
+    }
+    into(sharedUi)
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    dependsOn(syncSharedUi)
 }
 
 android {
@@ -31,6 +54,7 @@ android {
     }
 
     sourceSets.getByName("main") {
+        kotlin.directories.add(sharedUi.get().asFile.path)
         kotlin.directories.add(layout.projectDirectory.dir("../../shell/lib/theme").asFile.path)
         assets.directories.add(layout.projectDirectory.dir("../../shell/themes").asFile.path)
     }
