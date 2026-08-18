@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
@@ -69,9 +70,12 @@ fun StackScope.Input(
         label = "input-rail",
     )
     val requester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     LaunchedEffect(autoFocus) {
         if (autoFocus) {
             requester.requestFocus()
+        } else {
+            focusManager.clearFocus(force = true)
         }
     }
     val selection =
