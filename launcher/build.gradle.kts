@@ -33,12 +33,23 @@ android {
     sourceSets.getByName("main") {
         kotlin.directories.add(layout.projectDirectory.dir("../shell/lib/theme").asFile.path)
         assets.directories.add(layout.projectDirectory.dir("../shell/themes").asFile.path)
-        assets.directories.add(layout.projectDirectory.dir("../shell/plugins").asFile.path)
+        assets.directories.add(layout.buildDirectory.dir("generated/pluginAssets").get().asFile.path)
     }
 
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
+}
+
+val stagePluginAssets by tasks.registering(Copy::class) {
+    from(layout.projectDirectory.dir("../shell/plugins")) {
+        exclude("README.md")
+    }
+    into(layout.buildDirectory.dir("generated/pluginAssets/plugins"))
+}
+
+tasks.named("preBuild") {
+    dependsOn(stagePluginAssets)
 }
 
 dependencies {

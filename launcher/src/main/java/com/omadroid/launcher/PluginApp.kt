@@ -80,12 +80,12 @@ fun parsePluginApp(json: String): PluginApp {
 fun isHomePlugin(plugin: PluginApp): Boolean = "home" in plugin.kinds
 
 fun loadPluginApps(assets: AssetManager): List<PluginApp> {
-    val dirs = assets.list("") ?: return emptyList()
+    val dirs = assets.list("plugins") ?: return emptyList()
     return dirs
         .mapNotNull { dir ->
             val text =
                 try {
-                    assets.open("$dir/manifest.json").bufferedReader().use { it.readText() }
+                    assets.open("plugins/$dir/manifest.json").bufferedReader().use { it.readText() }
                 } catch (_: IOException) {
                     return@mapNotNull null
                 }
