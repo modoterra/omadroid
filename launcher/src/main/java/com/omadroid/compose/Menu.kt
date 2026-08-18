@@ -63,7 +63,9 @@ fun Menu(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .height(with(density) { style.cellPx.toDp() }),
+                            .height(with(density) { style.cellPx.toDp() })
+                            // TitleRow: stack pad + leading icon square + gap == cellPx.
+                            .padding(start = with(density) { style.cellPx.toDp() }),
                     contentAlignment = Alignment.CenterStart,
                 ) {
                     Text(section.header, color = style.colors.muted, description = section.header)
