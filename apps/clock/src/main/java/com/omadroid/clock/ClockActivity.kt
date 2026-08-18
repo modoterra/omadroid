@@ -2,6 +2,7 @@ package com.omadroid.clock
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.database.ContentObserver
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -18,7 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.omadroid.launcher.unitLengthPx
 import com.omadroid.launcher.widget.GridStyle
-import com.omadroid.theme.ThemeCatalog
+import com.omadroid.theme.OmadroidTheme
 import com.omadroid.theme.ThemeColors
 import kotlinx.coroutines.delay
 
@@ -34,6 +35,7 @@ class ClockActivity : ComponentActivity() {
     private var timer by mutableStateOf(TimerState())
     private var stopwatch by mutableStateOf(StopwatchState())
     private var nowElapsed by mutableLongStateOf(0L)
+    private var themeWatch: ContentObserver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -42,11 +44,8 @@ class ClockActivity : ComponentActivity() {
         window.decorView.overScrollMode = android.view.View.OVER_SCROLL_NEVER
         store = AlarmStore.deviceProtected(this)
         scheduler = AlarmScheduler(this)
-        theme = loadTheme()
-        window.decorView.setBackgroundColor(theme.background)
+        applySelectedTheme()
         hideSystemBars()
-        val unitPx = unitLengthPx(resources.displayMetrics.density)
-        style = GridStyle(unitPx, theme)
         alarms = store.load()
         nowElapsed = SystemClock.elapsedRealtime()
         if (Build.VERSION.SDK_INT >= 33 &&
@@ -90,6 +89,10 @@ class ClockActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         alarms = store.load()
+        if (themeWatch == null) {
+            themeWatch = OmadroidTheme.observe(this) { applySelectedTheme() }
+        }
+        applySelectedTheme()
         hideSystemBars()
     }
 
@@ -144,12 +147,21 @@ class ClockActivity : ComponentActivity() {
         window.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
     }
 
-    private fun loadTheme(): ThemeColors {
-        return try {
-            ThemeCatalog.load(assets, ThemeColors.DEFAULT_SLUG)
-        } catch (_: com.omadroid.theme.ThemeColorsException) {
-            placeholderTheme()
-        }
+    override fun onStop() {
+        themeWatch?.let { contentResolver.unregisterContentObserver(it) }
+        themeWatch = null
+        super.onStop()
+    }
+
+    private fun applySelectedTheme() {
+        theme =
+            try {
+                OmadroidTheme.load(this)
+            } catch (_: com.omadroid.theme.ThemeColorsException) {
+                placeholderTheme()
+            }
+        style = GridStyle(unitLengthPx(resources.displayMetrics.density), theme)
+        window.decorView.setBackgroundColor(theme.background)
     }
 }
 

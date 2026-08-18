@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.res.AssetManager
 import android.util.Log
 import com.omadroid.shell.plugin.PluginRegistry
+import com.omadroid.theme.OmadroidTheme
 import com.omadroid.theme.ThemeCatalog
 import com.omadroid.theme.ThemeColors
 import java.io.IOException
@@ -16,7 +17,12 @@ class OmadroidShellApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        theme = ThemeCatalog.load(assets)
+        theme =
+            try {
+                OmadroidTheme.load(this)
+            } catch (_: Exception) {
+                ThemeCatalog.load(assets)
+            }
         val texts = readPluginManifests(assets)
         if (texts.isEmpty()) {
             throw IllegalStateException("no plugin manifests in assets")

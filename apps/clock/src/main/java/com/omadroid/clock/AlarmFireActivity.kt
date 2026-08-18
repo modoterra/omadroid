@@ -21,7 +21,7 @@ import com.omadroid.compose.Stack
 import com.omadroid.compose.Text
 import com.omadroid.launcher.unitLengthPx
 import com.omadroid.launcher.widget.GridStyle
-import com.omadroid.theme.ThemeCatalog
+import com.omadroid.theme.OmadroidTheme
 import com.omadroid.theme.ThemeColors
 
 class AlarmFireActivity : ComponentActivity() {
@@ -36,7 +36,7 @@ class AlarmFireActivity : ComponentActivity() {
         AlarmTone.start(applicationContext)
         val theme =
             try {
-                ThemeCatalog.load(assets, ThemeColors.DEFAULT_SLUG)
+                OmadroidTheme.load(this)
             } catch (_: com.omadroid.theme.ThemeColorsException) {
                 ThemeColors.parse(
                     ThemeColors.DEFAULT_SLUG,

@@ -6,7 +6,11 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
-    <application
+    <queries>
+        <provider android:authorities="com.omadroid.theme" />
+    </queries>
+
+    <application>
         android:label="@string/app_name"
         android:allowBackup="false"
         android:supportsRtl="true"

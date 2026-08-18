@@ -38,4 +38,4 @@ Stock AOSP only: no Play Store, no Play services.
 - Product overlay turns off the stock action bar on `Theme.DeviceDefault`. HOME also requests `FEATURE_NO_TITLE`. Do not rely on a remount-only APK push for that.
 - Keep LatinIME, DocumentsUI, PackageInstaller, providers, and the telephony stack until first-party code replaces them.
 - Built-in modules live in `shell/modules/`. First-party plugin ids use the `omadroid.` prefix and live in `shell/plugins/`.
-- Themes are Omarchy `colors.toml` palettes in `shell/themes/`. Default is `tokyo-night`. Use those hex tokens for all UI color.
+- Themes are Omarchy `colors.toml` palettes in `shell/themes/`. Default is `tokyo-night`. Use those hex tokens for all UI color. First-party apps read the selected slug through `OmadroidTheme` (`content://com.omadroid.theme/current`).

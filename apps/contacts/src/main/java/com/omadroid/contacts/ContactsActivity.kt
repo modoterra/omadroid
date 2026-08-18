@@ -21,7 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.omadroid.launcher.unitLengthPx
 import com.omadroid.launcher.widget.GridStyle
-import com.omadroid.theme.ThemeCatalog
+import com.omadroid.theme.OmadroidTheme
 import com.omadroid.theme.ThemeColors
 
 class ContactsActivity : ComponentActivity() {
@@ -33,6 +33,7 @@ class ContactsActivity : ComponentActivity() {
     private var detail by mutableStateOf<ContactDetail?>(null)
     private var permitted by mutableStateOf(false)
     private lateinit var store: ContactsStore
+    private var themeWatch: ContentObserver? = null
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -52,15 +53,8 @@ class ContactsActivity : ComponentActivity() {
         actionBar?.hide()
         window.decorView.overScrollMode = android.view.View.OVER_SCROLL_NEVER
         store = ContactsContractStore(contentResolver)
-        theme =
-            try {
-                ThemeCatalog.load(assets, ThemeColors.DEFAULT_SLUG)
-            } catch (_: com.omadroid.theme.ThemeColorsException) {
-                placeholderTheme()
-            }
-        window.decorView.setBackgroundColor(theme.background)
+        applySelectedTheme()
         hideSystemBars()
-        style = GridStyle(unitLengthPx(resources.displayMetrics.density), theme)
         refreshPermissions()
         setContent {
             ContactsApp(
@@ -106,6 +100,10 @@ class ContactsActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, observer)
+        if (themeWatch == null) {
+            themeWatch = OmadroidTheme.observe(this) { applySelectedTheme() }
+        }
+        applySelectedTheme()
         refreshPermissions()
         hideSystemBars()
     }
@@ -119,7 +117,20 @@ class ContactsActivity : ComponentActivity() {
 
     override fun onStop() {
         contentResolver.unregisterContentObserver(observer)
+        themeWatch?.let { contentResolver.unregisterContentObserver(it) }
+        themeWatch = null
         super.onStop()
+    }
+
+    private fun applySelectedTheme() {
+        theme =
+            try {
+                OmadroidTheme.load(this)
+            } catch (_: com.omadroid.theme.ThemeColorsException) {
+                placeholderTheme()
+            }
+        style = GridStyle(unitLengthPx(resources.displayMetrics.density), theme)
+        window.decorView.setBackgroundColor(theme.background)
     }
 
     @Deprecated("Deprecated in Java")

@@ -23,7 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalView
 import com.omadroid.launcher.widget.GridStyle
-import com.omadroid.theme.ThemeCatalog
+import com.omadroid.theme.OmadroidTheme
 import com.omadroid.theme.ThemeColors
 import java.time.LocalDate
 import java.util.Locale
@@ -60,7 +60,7 @@ class HomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         actionBar?.hide()
         window.decorView.overScrollMode = android.view.View.OVER_SCROLL_NEVER
-        theme = loadSavedTheme()
+        theme = OmadroidTheme.load(this)
         if (savedInstanceState != null) {
             layout =
                 LauncherLayout.valueOf(
@@ -91,9 +91,6 @@ class HomeActivity : ComponentActivity() {
                         themeListY = themeListY,
                         wipe = wipe,
                     ),
-                onLayout = {
-                    layout = layout.next()
-                },
                 onSelectWorkspace = { id ->
                     workspaces = workspaces.select(id)
                 },
@@ -101,7 +98,10 @@ class HomeActivity : ComponentActivity() {
                     workspaces = workspaces.cycleLayout()
                 },
                 onClientClick = { client ->
-                    startLaunchable(this, client.launchId)
+                    val index = workspaces.active.clients.indexOfFirst { it.id == client.id }
+                    if (index >= 0) {
+                        workspaces = workspaces.focusPage(index)
+                    }
                 },
                 onFocusWorkspacePage = { index ->
                     workspaces = workspaces.focusPage(index)
@@ -238,7 +238,7 @@ class HomeActivity : ComponentActivity() {
     }
 
     private fun launchIntoWorkspace(launchId: String, title: String): Boolean {
-        if (!startLaunchable(this, launchId)) {
+        if (!isLaunchId(launchId)) {
             return false
         }
         clientSeq += 1
@@ -295,25 +295,13 @@ class HomeActivity : ComponentActivity() {
         }
     }
 
-    private fun prefs() =
-        createDeviceProtectedStorageContext().getSharedPreferences(PREFS, MODE_PRIVATE)
-
-    private fun loadSavedTheme(): ThemeColors {
-        val slug = prefs().getString(PREF_THEME, ThemeColors.DEFAULT_SLUG) ?: ThemeColors.DEFAULT_SLUG
-        return try {
-            ThemeCatalog.load(assets, slug)
-        } catch (_: com.omadroid.theme.ThemeColorsException) {
-            ThemeCatalog.load(assets, ThemeColors.DEFAULT_SLUG)
-        }
-    }
-
     private fun activateTheme(slug: String, view: android.view.View) {
         if (slug == theme.slug || wipe != null) {
             return
         }
         val snapshot = snapshotView(view)
-        prefs().edit().putString(PREF_THEME, slug).apply()
-        theme = ThemeCatalog.load(assets, slug)
+        OmadroidTheme.save(this, slug)
+        theme = OmadroidTheme.load(this)
         style = GridStyle(unitPx, theme)
         window.decorView.setBackgroundColor(theme.background)
         wipe = snapshot
@@ -322,8 +310,6 @@ class HomeActivity : ComponentActivity() {
     companion object {
         private const val STATE_LAYOUT = "launcher_layout"
         private const val STATE_WORKSPACE = "workspace"
-        private const val PREFS = "omadroid"
-        private const val PREF_THEME = "theme_slug"
     }
 }
 

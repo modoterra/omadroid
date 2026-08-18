@@ -4,25 +4,34 @@ import android.content.ComponentName
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.os.Build
 import android.os.Process
 import android.os.UserHandle
 import android.view.View
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer as Flex
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,6 +57,7 @@ import com.omadroid.compose.Direction
 import com.omadroid.compose.Glyph
 import com.omadroid.compose.InputWell
 import com.omadroid.compose.IconButton
+import com.omadroid.compose.LocalGridStyle
 import com.omadroid.compose.CommandList
 import com.omadroid.compose.Menu
 import com.omadroid.compose.SHEET_BACK_SCALE
@@ -87,7 +97,6 @@ data class HomeState(
 @Composable
 fun Home(
     state: HomeState,
-    onLayout: () -> Unit,
     onSelectWorkspace: (String) -> Unit,
     onCycleWorkspaceLayout: () -> Unit,
     onClientClick: (WorkspaceClient) -> Unit,
@@ -116,7 +125,8 @@ fun Home(
             }
     }
     Compose(state.style, wallpaper = wallpaper) {
-        Box(Modifier.fillMaxSize()) {
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val screenHeight = maxHeight
             val backScale = 1f - sheetProgress.value * (1f - SHEET_BACK_SCALE)
             Box(
                 Modifier
@@ -128,7 +138,7 @@ fun Home(
             ) {
                 Stack(Direction.Vertical, gap = false) {
                     Node(Slot.units(1)) {
-                        Bar(state, onSelectWorkspace, onCycleWorkspaceLayout)
+                        Bar(state, wallpaper, screenHeight, onSelectWorkspace)
                     }
                     Node(Slot.grow()) {
                         Box(
@@ -151,12 +161,14 @@ fun Home(
                     }
                     Node(Slot.units(1)) {
                         Dock(
-                            layout = state.layout,
+                            workspaceLayout = state.workspaces.active.layout,
                             query = state.commandQuery,
                             commandOpen = state.commandOpen,
+                            wallpaper = wallpaper,
+                            screenHeight = screenHeight,
                             onQuery = onCommand,
                             onCommandOpen = onCommandOpen,
-                            onLayout = onLayout,
+                            onCycleWorkspaceLayout = onCycleWorkspaceLayout,
                             onOpenMenu = onOpenMenu,
                         )
                     }
@@ -203,38 +215,65 @@ fun Home(
 @Composable
 private fun Bar(
     state: HomeState,
+    wallpaper: ImageBitmap?,
+    screenHeight: Dp,
     onSelectWorkspace: (String) -> Unit,
-    onCycleWorkspaceLayout: () -> Unit,
 ) {
     val context = LocalContext.current
     val arranged = arrangeBar(composeBarPlacements(builtinModules(), defaultBarPlacements))
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Color(state.style.colors.lighterBackground).copy(alpha = 0.86f))
-            .semantics { contentDescription = context.getString(R.string.bar_name) },
+    ChromePlate(
+        wallpaper = wallpaper,
+        screenHeight = screenHeight,
+        align = Alignment.TopCenter,
+        description = context.getString(R.string.bar_name),
     ) {
         BarAnchor.entries.forEach { anchor ->
             Anchor(anchor, arranged.getValue(anchor), state, onSelectWorkspace)
         }
-        val layoutLabel =
-            when (state.workspaces.active.layout) {
-                WorkspaceLayout.Dwindle -> context.getString(R.string.workspace_layout_dwindle)
-                WorkspaceLayout.Scrolling -> context.getString(R.string.workspace_layout_scrolling)
-            }
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    }
+}
+
+@Composable
+private fun ChromePlate(
+    wallpaper: ImageBitmap?,
+    screenHeight: Dp,
+    align: Alignment,
+    description: String,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    val style = LocalGridStyle.current
+    val canBlur = Build.VERSION.SDK_INT >= 31
+    Box(
+        Modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .semantics { contentDescription = description },
+    ) {
+        if (wallpaper != null && canBlur) {
+            Image(
+                bitmap = wallpaper,
+                contentDescription = null,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(screenHeight)
+                        .align(align)
+                        .blur(20.dp),
+                contentScale = ContentScale.Crop,
+            )
             Box(
                 Modifier
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onCycleWorkspaceLayout,
-                    )
-                    .semantics { contentDescription = layoutLabel },
-            ) {
-                Text(layoutLabel, color = state.style.colors.muted)
-            }
+                    .fillMaxSize()
+                    .background(Color(style.colors.lighterBackground).copy(alpha = 0.42f)),
+            )
+        } else {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color(style.colors.lighterBackground).copy(alpha = 0.94f)),
+            )
         }
+        content()
     }
 }
 
@@ -386,24 +425,31 @@ private fun CommandPalette(
 
 @Composable
 private fun Dock(
-    layout: LauncherLayout,
+    workspaceLayout: WorkspaceLayout,
     query: String,
     commandOpen: Boolean,
+    wallpaper: ImageBitmap?,
+    screenHeight: Dp,
     onQuery: (String) -> Unit,
     onCommandOpen: () -> Unit,
-    onLayout: () -> Unit,
+    onCycleWorkspaceLayout: () -> Unit,
     onOpenMenu: () -> Unit,
 ) {
     val context = LocalContext.current
-    val style = com.omadroid.compose.LocalGridStyle.current
+    val style = LocalGridStyle.current
     val density = LocalDensity.current
     val gap = with(density) { style.spacePx.toDp() }
     val commandLabel = context.getString(R.string.launcher_command)
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Color(style.colors.lighterBackground).copy(alpha = 0.86f))
-            .semantics { contentDescription = context.getString(R.string.dock_name) },
+    val layoutLabel =
+        when (workspaceLayout) {
+            WorkspaceLayout.Dwindle -> context.getString(R.string.workspace_layout_dwindle)
+            WorkspaceLayout.Scrolling -> context.getString(R.string.workspace_layout_scrolling)
+        }
+    ChromePlate(
+        wallpaper = wallpaper,
+        screenHeight = screenHeight,
+        align = Alignment.BottomCenter,
+        description = context.getString(R.string.dock_name),
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val cell = maxHeight
@@ -451,13 +497,14 @@ private fun Dock(
                 Box(Modifier.size(cell)) {
                     IconButton(
                         IconGlyphs.LAYOUT,
-                        if (layout == LauncherLayout.Focus) {
-                            context.getString(R.string.launcher_layout_focus)
-                        } else {
-                            context.getString(R.string.launcher_layout_desktop)
-                        },
-                        color = if (layout == LauncherLayout.Focus) style.colors.accent else style.colors.foreground,
-                        onClick = onLayout,
+                        layoutLabel,
+                        color =
+                            if (workspaceLayout == WorkspaceLayout.Scrolling) {
+                                style.colors.accent
+                            } else {
+                                style.colors.foreground
+                            },
+                        onClick = onCycleWorkspaceLayout,
                     )
                 }
                 Flex(Modifier.width(gap))
@@ -560,6 +607,11 @@ internal fun launchableApps(context: Context): List<LaunchableApp> {
         },
         context.packageName,
     )
+}
+
+internal fun isLaunchId(itemId: String): Boolean {
+    val parts = itemId.split('/', limit = 2)
+    return parts.size == 2 && parts[0].isNotEmpty() && parts[1].isNotEmpty()
 }
 
 internal fun startLaunchable(context: Context, itemId: String): Boolean {

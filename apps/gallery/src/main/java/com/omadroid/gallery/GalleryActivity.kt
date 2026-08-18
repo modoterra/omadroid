@@ -1,5 +1,6 @@
 package com.omadroid.gallery
 
+import android.database.ContentObserver
 import android.os.Build
 import android.os.Bundle
 import android.view.Window
@@ -15,7 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.omadroid.gallery.widget.GridStyle
 import com.omadroid.gallery.widget.unitLengthPx
-import com.omadroid.theme.ThemeCatalog
+import com.omadroid.theme.OmadroidTheme
 import com.omadroid.theme.ThemeColors
 
 class GalleryActivity : ComponentActivity() {
@@ -24,6 +25,7 @@ class GalleryActivity : ComponentActivity() {
     private var permitted by mutableStateOf(false)
     private var images by mutableStateOf<List<MediaImage>>(emptyList())
     private var nav by mutableStateOf(GalleryNav())
+    private var themeWatch: ContentObserver? = null
 
     private val askPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -38,10 +40,8 @@ class GalleryActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         actionBar?.hide()
         window.decorView.overScrollMode = android.view.View.OVER_SCROLL_NEVER
-        theme = loadTheme()
-        window.decorView.setBackgroundColor(theme.background)
+        applySelectedTheme()
         hideSystemBars()
-        style = GridStyle(unitLengthPx(resources.displayMetrics.density), theme)
         setContent {
             GalleryApp(
                 style = style,
@@ -64,8 +64,18 @@ class GalleryActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        if (themeWatch == null) {
+            themeWatch = OmadroidTheme.observe(this) { applySelectedTheme() }
+        }
+        applySelectedTheme()
         hideSystemBars()
         reload()
+    }
+
+    override fun onStop() {
+        themeWatch?.let { contentResolver.unregisterContentObserver(it) }
+        themeWatch = null
+        super.onStop()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -113,12 +123,16 @@ class GalleryActivity : ComponentActivity() {
         window.insetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
     }
 
-    private fun loadTheme(): ThemeColors =
-        try {
-            ThemeCatalog.load(assets, ThemeColors.DEFAULT_SLUG)
-        } catch (_: com.omadroid.theme.ThemeColorsException) {
-            placeholderTheme()
-        }
+    private fun applySelectedTheme() {
+        theme =
+            try {
+                OmadroidTheme.load(this)
+            } catch (_: com.omadroid.theme.ThemeColorsException) {
+                placeholderTheme()
+            }
+        style = GridStyle(unitLengthPx(resources.displayMetrics.density), theme)
+        window.decorView.setBackgroundColor(theme.background)
+    }
 }
 
 private fun placeholderTheme(): ThemeColors =

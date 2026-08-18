@@ -34,4 +34,12 @@ class LaunchableAppsTest {
         val visible = visibleLaunchableApps(apps, "com.omadroid.launcher")
         assertEquals(listOf("Clock", "Contacts", "Gallery"), visible.map { it.label })
     }
+
+    @Test
+    fun launchIdsArePackageAndActivity() {
+        assertEquals(true, isLaunchId("com.omadroid.clock/com.omadroid.clock.ClockActivity"))
+        assertEquals(false, isLaunchId("theme"))
+        assertEquals(false, isLaunchId("focus"))
+        assertEquals(false, isLaunchId("/ClockActivity"))
+    }
 }
