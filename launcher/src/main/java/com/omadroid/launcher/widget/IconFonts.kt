@@ -53,6 +53,7 @@ object IconGlyphs {
     const val TOGGLE_OFF = "\uF204"
     const val OMARCHY = "\uE900"
     const val SEARCH = "\uF002"
+    const val COMMAND = "\uF120"
     const val CLOSE = "\uF00D"
 
     fun battery(percent: Int, charging: Boolean): String {

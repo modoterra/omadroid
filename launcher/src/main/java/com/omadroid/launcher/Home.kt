@@ -372,7 +372,7 @@ private fun Dock(
                 onValueChange = onQuery,
                 hint = context.getString(R.string.launcher_command),
                 slot = Slot.grow(),
-                icon = IconGlyphs.SEARCH,
+                icon = IconGlyphs.COMMAND,
                 accent = false,
                 autoFocus = commandOpen,
                 onFocus = onCommandOpen,
