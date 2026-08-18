@@ -12,6 +12,7 @@ A plugin is a directory with `manifest.json`. First-party ids use the
 | Home | `omadroid.home` | `home` | `OmadroidLauncher` |
 | Contacts | `omadroid.contacts` | `contacts` | `OmadroidContacts` |
 | Gallery | `omadroid.gallery` | `gallery` | `OmadroidGallery` |
+| Clock | `omadroid.clock` | `clock` | `OmadroidClock` |
 
 `home` is an Omadroid kind. Omarchy has no HOME plugin because Hyprland
 is the window manager. On Android, HOME is the desktop.

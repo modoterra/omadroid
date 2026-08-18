@@ -72,6 +72,9 @@ fi
 if [[ -f "${ROOT}/apps/gallery/Android.bp" ]]; then
   omadroid_stage_soong_app "$ROOT" "$vendor_dir" apps/gallery
 fi
+if [[ -f "${ROOT}/apps/clock/Android.bp" ]]; then
+  omadroid_stage_soong_app "$ROOT" "$vendor_dir" apps/clock
+fi
 if [[ -d "${ROOT}/shell/plugins" ]]; then
   ln -sfn "${ROOT}/shell/plugins" "${vendor_dir}/shell/plugins"
 fi

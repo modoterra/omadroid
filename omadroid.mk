@@ -7,7 +7,8 @@ PRODUCT_PACKAGES += \
     OmadroidLauncher \
     OmadroidShell \
     OmadroidContacts \
-    OmadroidGallery
+    OmadroidGallery \
+    OmadroidClock
 
 # Do not filter-out PRODUCT_PACKAGES here. inherit-product stores
 # goldfish entries as inherit tags; filter-out never sees Gallery2.

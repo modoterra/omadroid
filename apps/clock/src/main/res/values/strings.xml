@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Clock</string>
+    <string name="clock_title">Clock</string>
+    <string name="tab_alarms">Alarms</string>
+    <string name="tab_timer">Timer</string>
+    <string name="tab_stopwatch">Stopwatch</string>
+    <string name="alarms_empty">No alarms</string>
+    <string name="alarm_add">Add</string>
+    <string name="alarm_delete">Delete</string>
+    <string name="alarm_enable">Enable</string>
+    <string name="alarm_disable">Disable</string>
+    <string name="alarm_hour_up">Hour up</string>
+    <string name="alarm_hour_down">Hour down</string>
+    <string name="alarm_minute_up">Minute up</string>
+    <string name="alarm_minute_down">Minute down</string>
+    <string name="alarm_inexact">Approximate alarms</string>
+    <string name="timer_start">Start</string>
+    <string name="timer_pause">Pause</string>
+    <string name="timer_reset">Reset</string>
+    <string name="stopwatch_lap">Lap</string>
+    <string name="alarm_ringing">Alarm</string>
+    <string name="alarm_dismiss">Dismiss</string>
+    <string name="alarm_channel">Alarms</string>
+</resources>

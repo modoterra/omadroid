@@ -220,6 +220,8 @@ assert_eq "first-party plugins include omadroid.contacts" "omadroid.contacts" \
   "$(omadroid_first_party_plugin_ids "$ROOT" | grep -Fx 'omadroid.contacts')"
 assert_eq "first-party plugins include omadroid.gallery" "omadroid.gallery" \
   "$(omadroid_first_party_plugin_ids "$ROOT" | grep -Fx 'omadroid.gallery')"
+assert_eq "first-party plugins include omadroid.clock" "omadroid.clock" \
+  "$(omadroid_first_party_plugin_ids "$ROOT" | grep -Fx 'omadroid.clock')"
 
 while IFS= read -r module || [[ -n "$module" ]]; do
   [[ -n "$module" ]] || continue

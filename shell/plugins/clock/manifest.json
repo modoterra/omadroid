@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "omadroid.clock",
+  "name": "Clock",
+  "version": "0.1.0",
+  "kinds": ["clock"],
+  "package": "com.omadroid.clock",
+  "entryPoints": {
+    "clock": "com.omadroid.clock/.ClockActivity"
+  },
+  "soongModule": "OmadroidClock"
+}
