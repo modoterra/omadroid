@@ -1,22 +1,15 @@
-// Soong module for the product image. The Gradle project in this
-// directory is the workbench (adb install) build of the same sources.
+// Product module is the Gradle-built APK (Omadroid Compose / Jetpack Foundation).
+// Run scripts/build-launcher.sh before lunch/m so prebuilt/OmadroidLauncher.apk exists.
 //
 // https://source.android.com/docs/setup/build/building
 
-android_app {
+android_app_import {
     name: "OmadroidLauncher",
-    srcs: ["src/main/java/**/*.kt"],
-    resource_dirs: ["src/main/res"],
-    asset_dirs: [
-        "themes",
-        "src/main/assets",
-    ],
-    static_libs: ["OmadroidTheme"],
-    manifest: "src/main/AndroidManifest.xml",
-    platform_apis: true,
+    apk: "prebuilt/OmadroidLauncher.apk",
+    certificate: "platform",
     privileged: true,
     system_ext_specific: true,
-    certificate: "platform",
+    presigned: false,
     // inherit-product records goldfish packages as inherit tags.
     // filter-out cannot see Gallery2/Dialer until those tags expand.
     // overrides drops them after the product list is resolved.
@@ -37,6 +30,46 @@ android_app {
         "Launcher3QuickStep",
         "Dialer",
         "Stk",
+        "SystemUI",
+        "Settings",
+        "SettingsIntelligence",
+        "LiveWallpapersPicker",
+        "WallpaperCropper",
+        "AvatarPicker",
+        "BasicDreams",
+        "EmergencyInfo",
+        "AccessibilityMenu",
+        "HTMLViewer",
+        "DownloadProviderUi",
+        "MusicFX",
+        "EyeDropper",
+        "Traceur",
+        "DeviceDiagnostics",
+        "PrintSpooler",
+        "StorageManager",
+        "DeviceAsWebcam",
+        "SystemUIEmulationPixelFoldOverlay",
+        "SystemUIEmulationPixel8ProOverlay",
+        "SystemUIEmulationPixel8aOverlay",
+        "SystemUIEmulationPixel8Overlay",
+        "SystemUIEmulationPixel7ProOverlay",
+        "SystemUIEmulationPixel7Overlay",
+        "SystemUIEmulationPixel7aOverlay",
+        "SystemUIEmulationPixel6ProOverlay",
+        "SystemUIEmulationPixel6Overlay",
+        "SystemUIEmulationPixel6aOverlay",
+        "SystemUIEmulationPixel5Overlay",
+        "SystemUIEmulationPixel4XLOverlay",
+        "SystemUIEmulationPixel4Overlay",
+        "SystemUIEmulationPixel4aOverlay",
+        "SystemUIEmulationPixel3XLOverlay",
+        "SystemUIEmulationPixel3Overlay",
+        "SystemUIEmulationPixel3aOverlay",
+        "SystemUIEmulationPixel3aXLOverlay",
+        "NavigationBarMode2ButtonOverlay",
+        "NavigationBarMode3ButtonOverlay",
+        "NavigationBarModeGesturalOverlay",
+        "TransparentNavigationBarOverlay",
     ],
     dex_preopt: {
         enabled: false,

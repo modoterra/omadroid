@@ -20,7 +20,6 @@ data class BarPlacement(
 
 val defaultBarPlacements: List<BarPlacement> =
     listOf(
-        BarPlacement(BarModule.Wifi, BarAnchor.Right),
         BarPlacement(BarModule.Battery, BarAnchor.Right),
     )
 

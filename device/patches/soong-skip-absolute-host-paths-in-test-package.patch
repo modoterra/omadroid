@@ -1,0 +1,16 @@
+diff --git i/ci_tests/ci_test_package_zip.go w/ci_tests/ci_test_package_zip.go
+index bccfe6569..0ff2d8cb7 100644
+--- i/ci_tests/ci_test_package_zip.go
++++ w/ci_tests/ci_test_package_zip.go
+@@ -302,6 +302,11 @@ func extendBuilderCommand(ctx android.ModuleContext, m android.ModuleProxy, buil
+ 		if strings.HasPrefix(f, "out") {
+ 			continue
+ 		}
++		// Host install paths are absolute when OUT_DIR is absolute.
++		// They are not product-image artifacts.
++		if filepath.IsAbs(f) {
++			continue
++		}
+ 		if strings.HasPrefix(f, "system/") {
+ 			f = strings.Replace(f, "system/", "DATA/", 1)
+ 		}

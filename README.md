@@ -10,7 +10,7 @@ This machine already runs Omarchy.
 
 ## Product image
 
-The product is `omadroid_x86_64`. It inherits the generic goldfish/ranchu phone ([sdk_phone64_x86_64](https://android.googlesource.com/device/generic/goldfish/+/refs/heads/main/64bitonly/product/sdk_phone64_x86_64.mk)), omits the stock `/product` apps and Launcher3, and installs `omadroid-shell` as HOME. The `omadroid.home` plugin (`OmadroidLauncher`) is the home UI.
+The product is `omadroid_x86_64`. It inherits the generic goldfish/ranchu phone ([sdk_phone64_x86_64](https://android.googlesource.com/device/generic/goldfish/+/refs/heads/main/64bitonly/product/sdk_phone64_x86_64.mk)), omits stock visual apps (Launcher3, SystemUI, Settings, gallery, and the rest of that set), and installs `omadroid-shell` as HOME. Background services, LatinIME, DocumentsUI, and WebView stay. The `omadroid.home` plugin (`OmadroidLauncher`) is the home UI. `omadroid-shell` hosts the SystemUI service stub so system_server still has a component to start.
 
 AOSP stays a local `repo sync` ([download](https://source.android.com/docs/setup/download), [build](https://source.android.com/docs/setup/build/building)). Do not vendor that tree here.
 
@@ -114,7 +114,7 @@ After the emulator window appears, from another terminal:
 | `shell/` | host process `omadroid-shell` (HOME; loads plugins) |
 | `shell/plugins/` | first-party plugins (`omadroid.home`, …) |
 | `shell/themes/` | Omarchy `colors.toml` hex palettes |
-| `launcher/` | HOME app sources (Gradle workbench + Soong `OmadroidLauncher`) |
+| `launcher/` | HOME app (Gradle + Omadroid Compose; Soong imports `prebuilt/OmadroidLauncher.apk`) |
 | `scripts/prepare-aosp.sh` | link this repo into an AOSP checkout |
 | `sdk/` | workbench `ANDROID_HOME` (gitignored) |
 | `avd/` | workbench AVD (gitignored) |

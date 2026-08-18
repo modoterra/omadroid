@@ -20,6 +20,23 @@ data class MenuSpec(
 fun menuRows(spec: MenuSpec): List<MenuItem> =
     spec.sections.flatMap { it.items }
 
+fun filterMenu(spec: MenuSpec, query: String): MenuSpec {
+    val needle = query.trim()
+    if (needle.isEmpty()) {
+        return spec
+    }
+    return MenuSpec(
+        spec.sections.mapNotNull { section ->
+            val items = section.items.filter { it.title.contains(needle, ignoreCase = true) }
+            if (items.isEmpty()) {
+                null
+            } else {
+                section.copy(items = items)
+            }
+        },
+    )
+}
+
 fun withToggled(spec: MenuSpec, id: String, toggled: Boolean): MenuSpec =
     spec.copy(
         sections =

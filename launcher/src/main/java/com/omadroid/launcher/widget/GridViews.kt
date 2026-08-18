@@ -154,6 +154,18 @@ class GridIconButton(context: Context, private var style: GridStyle) : TextView(
         minWidth = next.innerPx
         minHeight = next.innerPx
     }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        val height = MeasureSpec.getSize(heightMeasureSpec)
+        if (heightMode != MeasureSpec.UNSPECIFIED && height > 0) {
+            val icon = (height * style.iconPx / style.cellPx).coerceAtLeast(1)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, icon.toFloat())
+            setMeasuredDimension(height, height)
+            return
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
 }
 
 class GridField(context: Context, private var style: GridStyle) : EditText(context, null, 0), Node {
@@ -185,22 +197,28 @@ class GridField(context: Context, private var style: GridStyle) : EditText(conte
             },
         )
         setPadding(next.spacePx, next.spacePx, next.spacePx, next.spacePx)
-        maxHeight = next.innerPx
+        minHeight = next.innerPx
     }
 }
 
 fun gridCellParams(style: GridStyle): LinearLayout.LayoutParams =
-    LinearLayout.LayoutParams(style.innerPx, style.innerPx).apply {
+    LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.WRAP_CONTENT,
+        ViewGroup.LayoutParams.MATCH_PARENT,
+    ).apply {
         marginStart = style.spacePx
     }
 
 fun gridIconParams(style: GridStyle): LinearLayout.LayoutParams =
-    LinearLayout.LayoutParams(style.innerPx, style.innerPx).apply {
+    LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.WRAP_CONTENT,
+        ViewGroup.LayoutParams.MATCH_PARENT,
+    ).apply {
         marginEnd = style.spacePx
     }
 
 fun gridStretchParams(style: GridStyle): LinearLayout.LayoutParams =
-    LinearLayout.LayoutParams(0, style.innerPx, 1f).apply {
+    LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
         marginEnd = style.spacePx
     }
 

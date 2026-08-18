@@ -15,10 +15,12 @@
         android:label="@string/app_name"
         android:allowBackup="false"
         android:supportsRtl="true"
+        android:directBootAware="true"
         android:theme="@style/Theme.Omadroid.Home">
         <activity
             android:name=".HomeActivity"
             android:exported="true"
+            android:directBootAware="true"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:stateNotNeeded="true"

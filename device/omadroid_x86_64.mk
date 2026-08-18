@@ -7,6 +7,11 @@
 
 $(call inherit-product, device/generic/goldfish/64bitonly/product/sdk_phone64_x86_64.mk)
 
+# Goldfish defaults this group to 1800MiB. Our system+product+vendor
+# images exceed that when packaging super.img.
+BOARD_EMULATOR_DYNAMIC_PARTITIONS_SIZE := $(shell expr 2300 \* 1048576 )
+BOARD_SUPER_PARTITION_SIZE := $(shell expr $(BOARD_EMULATOR_DYNAMIC_PARTITIONS_SIZE) + 8388608 )
+
 PRODUCT_NAME := omadroid_x86_64
 PRODUCT_BRAND := omadroid
 PRODUCT_MODEL := Omadroid

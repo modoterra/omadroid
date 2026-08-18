@@ -51,6 +51,8 @@ AOSP_ROOT="$(cd "$AOSP_ROOT" && pwd)"
 [[ -f "${AOSP_ROOT}/device/generic/goldfish/64bitonly/product/sdk_phone64_x86_64.mk" ]] || \
   omadroid_die "${AOSP_ROOT} has no goldfish sdk_phone64_x86_64 product"
 
+"${ROOT}/scripts/build-launcher.sh" --aosp "$AOSP_ROOT"
+
 vendor_dir="${AOSP_ROOT}/vendor/modoterra/omadroid"
 device_dir="${AOSP_ROOT}/device/modoterra/omadroid"
 

@@ -8,7 +8,7 @@ class BarLayoutTest {
     fun defaultPutsStatusOnRight() {
         val arranged = arrangeBar(defaultBarPlacements)
         assertEquals(emptyList<BarModule>(), arranged[BarAnchor.Center])
-        assertEquals(listOf(BarModule.Wifi, BarModule.Battery), arranged[BarAnchor.Right])
+        assertEquals(listOf(BarModule.Battery), arranged[BarAnchor.Right])
         assertEquals(emptyList<BarModule>(), arranged[BarAnchor.Left])
     }
 

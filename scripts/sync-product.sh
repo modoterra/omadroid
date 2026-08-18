@@ -18,8 +18,9 @@ Usage:
   sync-product.sh --aosp <aosp-root>
   AOSP_ROOT=<aosp-root> sync-product.sh
 
-After m OmadroidLauncher (or OmadroidShell), run this instead of rebuilding
-super.img. The overlay lasts until the guest reboots.
+Builds the Gradle HOME APK (Omadroid Compose), then pushes it and the
+Soong OmadroidShell APK. After m OmadroidShell, run this instead of
+rebuilding super.img. The overlay lasts until the guest reboots.
 EOF
 }
 
@@ -48,9 +49,10 @@ omadroid_export_paths "$ROOT"
 ADB="${ANDROID_HOME}/platform-tools/adb"
 [[ -x "$ADB" ]] || omadroid_die "adb not installed. Run ${ROOT}/scripts/setup.sh first."
 
-launcher_apk="${PRODUCT_OUT}/system_ext/priv-app/OmadroidLauncher/OmadroidLauncher.apk"
+"${ROOT}/scripts/build-launcher.sh" --aosp "$AOSP_ROOT"
+launcher_apk="${ROOT}/launcher/prebuilt/OmadroidLauncher.apk"
 shell_apk="${PRODUCT_OUT}/system_ext/priv-app/OmadroidShell/OmadroidShell.apk"
-[[ -f "$launcher_apk" ]] || omadroid_die "missing ${launcher_apk}; build OmadroidLauncher first"
+[[ -f "$launcher_apk" ]] || omadroid_die "missing ${launcher_apk}; build-launcher.sh failed"
 [[ -f "$shell_apk" ]] || omadroid_die "missing ${shell_apk}; build OmadroidShell first"
 
 if ! omadroid_wait_for_boot "$ADB" 60; then
@@ -71,8 +73,13 @@ fi
 
 "$ADB" push "$launcher_apk" /system_ext/priv-app/OmadroidLauncher/OmadroidLauncher.apk
 "$ADB" push "$shell_apk" /system_ext/priv-app/OmadroidShell/OmadroidShell.apk
+"$ADB" logcat -c -b crash </dev/null || true
 "$ADB" shell am force-stop com.omadroid.launcher </dev/null
 "$ADB" shell am force-stop com.omadroid.shell </dev/null
 "$ADB" shell am start -a android.intent.action.MAIN -c android.intent.category.HOME </dev/null
 
-printf 'omadroid: pushed launcher and shell\n'
+if ! omadroid_check_home "$ADB"; then
+  omadroid_die "HOME crashed or never resumed after push (logcat -b crash)"
+fi
+
+printf 'omadroid: pushed launcher and shell; HOME is up\n'

@@ -10,8 +10,10 @@ userland and load through `omadroid-shell`.
 | Bar | `omadroid.bar` | Top chrome. One unit tall. Left, Center, and Right anchors. |
 | Workspaces | `omadroid.workspaces` | Fill slot between the bars. Will tile inside its allocated units. |
 | Workspace switcher | `omadroid.workspace-switcher` | Selects the active workspace. Mounts a switcher on the Bar (Left). |
-| Dock | `omadroid.dock` | Bottom chrome. One unit tall. Search field, layout, menu. |
-| Sheet | `omadroid.sheet` | Screen that slides in from the left over the full viewport. Stack push/pop. |
+| Dock | `omadroid.dock` | Bottom chrome. One unit tall. Command field, layout, menu. Registers Focus and app commands. |
+| Sheet | `omadroid.sheet` | Screen that slides in from the left over the full viewport. Stack push/pop. Registers Theme. |
+
+Modules register `CommandItem`s on `ModuleSpec.commands`. The dock Command palette fuzzy-searches that list. The workspace switcher registers each workspace.
 
 One unit is a square. Every pad and margin is the same length
 (`spacePx` = unit/8). Corners are square. The unit length is still

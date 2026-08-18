@@ -24,6 +24,10 @@ omadroid_stage_soong_app() {
     cp -f "${root}/${name}/Android.bp" "${dest}/Android.bp"
   fi
   ln -sfn "${root}/${name}/src" "${dest}/src"
+  if [[ -f "${root}/${name}/prebuilt/OmadroidLauncher.apk" ]]; then
+    mkdir -p "${dest}/prebuilt"
+    cp -f "${root}/${name}/prebuilt/OmadroidLauncher.apk" "${dest}/prebuilt/OmadroidLauncher.apk"
+  fi
 }
 
 omadroid_export_java_home() {
@@ -152,8 +156,8 @@ omadroid_emulator_args() {
   printf '%s\n' "${args[@]}"
 }
 
-# Product apps we hide for user 0. Not Launcher3, SystemUI, Settings,
-# LatinIME, WebView, or the telephony/providers stack.
+# Product apps we hide for user 0. Not LatinIME, WebView,
+# or the telephony/providers stack.
 omadroid_strip_packages() {
   cat <<'EOF'
 com.android.quicksearchbox
@@ -232,6 +236,39 @@ omadroid_wait_for_boot() {
   return 1
 }
 
+# True when crash log text includes a first-party HOME fatal.
+omadroid_launcher_crash_in_log() {
+  local text
+  text="$(cat)"
+  [[ "$text" == *'FATAL EXCEPTION'* && "$text" == *'Process: com.omadroid.launcher'* ]]
+}
+
+# After a push/start, HOME must stay up. Fails on a crash loop.
+omadroid_check_home() {
+  local adb="${1:-}"
+  local tries="${2:-8}"
+  [[ -n "$adb" ]] || omadroid_die "adb required"
+  local i pid next top crash
+  "$adb" logcat -c -b crash >/dev/null 2>&1 || true
+  for i in $(seq 1 "$tries"); do
+    sleep 1
+    top="$("$adb" shell dumpsys activity activities 2>/dev/null | grep topResumed | head -1)" || top=""
+    echo "$top" | grep -q 'com.omadroid.launcher/.HomeActivity' || continue
+    pid="$("$adb" shell pidof com.omadroid.launcher 2>/dev/null | tr -d '\r')" || pid=""
+    [[ -n "$pid" ]] || continue
+    sleep 2
+    next="$("$adb" shell pidof com.omadroid.launcher 2>/dev/null | tr -d '\r')" || next=""
+    [[ "$pid" == "$next" ]] || return 1
+    crash="$("$adb" logcat -d -b crash -t 20 2>/dev/null)" || crash=""
+    if printf '%s\n' "$crash" | omadroid_launcher_crash_in_log; then
+      printf '%s\n' "$crash" >&2
+      return 1
+    fi
+    return 0
+  done
+  return 1
+}
+
 # Concatenate generic ramdisk (/init) and vendor_ramdisk (fstab.ranchu).
 # The kernel accepts stacked uncompressed cpio archives as one initramfs.
 omadroid_merge_product_ramdisk() {
@@ -275,7 +312,8 @@ omadroid_product_emulator_args() {
 }
 
 # Soong/make module names omitted from the product after inheriting
-# goldfish sdk_phone64_x86_64. Keep SystemUI, Settings, LatinIME.
+# goldfish sdk_phone64_x86_64. Keep LatinIME, DocumentsUI,
+# PackageInstaller, and the provider/telephony stack.
 omadroid_product_packages_remove() {
   cat <<'EOF'
 Browser2
@@ -294,6 +332,46 @@ Launcher3QuickStep
 Launcher3
 Dialer
 Stk
+SystemUI
+Settings
+SettingsIntelligence
+LiveWallpapersPicker
+WallpaperCropper
+AvatarPicker
+BasicDreams
+EmergencyInfo
+AccessibilityMenu
+HTMLViewer
+DownloadProviderUi
+MusicFX
+EyeDropper
+Traceur
+DeviceDiagnostics
+PrintSpooler
+StorageManager
+DeviceAsWebcam
+SystemUIEmulationPixelFoldOverlay
+SystemUIEmulationPixel8ProOverlay
+SystemUIEmulationPixel8aOverlay
+SystemUIEmulationPixel8Overlay
+SystemUIEmulationPixel7ProOverlay
+SystemUIEmulationPixel7Overlay
+SystemUIEmulationPixel7aOverlay
+SystemUIEmulationPixel6ProOverlay
+SystemUIEmulationPixel6Overlay
+SystemUIEmulationPixel6aOverlay
+SystemUIEmulationPixel5Overlay
+SystemUIEmulationPixel4XLOverlay
+SystemUIEmulationPixel4Overlay
+SystemUIEmulationPixel4aOverlay
+SystemUIEmulationPixel3XLOverlay
+SystemUIEmulationPixel3Overlay
+SystemUIEmulationPixel3aOverlay
+SystemUIEmulationPixel3aXLOverlay
+NavigationBarMode2ButtonOverlay
+NavigationBarMode3ButtonOverlay
+NavigationBarModeGesturalOverlay
+TransparentNavigationBarOverlay
 EOF
 }
 

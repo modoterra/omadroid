@@ -10,7 +10,7 @@ class BuiltinModuleTest {
         val arranged = arrangeBar(composeBarPlacements(builtinModules(), defaultBarPlacements))
         assertEquals(listOf(BarModule.WorkspaceSwitcher), arranged[BarAnchor.Left])
         assertEquals(emptyList<BarModule>(), arranged[BarAnchor.Center])
-        assertEquals(listOf(BarModule.Wifi, BarModule.Battery), arranged[BarAnchor.Right])
+        assertEquals(listOf(BarModule.Battery), arranged[BarAnchor.Right])
     }
 
     @Test

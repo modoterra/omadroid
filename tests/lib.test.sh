@@ -205,12 +205,14 @@ assert_eq "product removes Dialer" "Dialer" \
   "$(printf '%s\n' "$REMOVE" | grep -Fx 'Dialer')"
 assert_eq "product removes Stk" "Stk" \
   "$(printf '%s\n' "$REMOVE" | grep -Fx 'Stk')"
-assert_fail "product does not remove SystemUI" \
-  grep -Fxq 'SystemUI' <<<"$REMOVE"
-assert_fail "product does not remove Settings" \
-  grep -Fxq 'Settings' <<<"$REMOVE"
+assert_eq "product removes SystemUI" "SystemUI" \
+  "$(printf '%s\n' "$REMOVE" | grep -Fx 'SystemUI')"
+assert_eq "product removes Settings" "Settings" \
+  "$(printf '%s\n' "$REMOVE" | grep -Fx 'Settings')"
 assert_fail "product does not remove LatinIME" \
   grep -Fxq 'LatinIME' <<<"$REMOVE"
+assert_fail "product does not remove DocumentsUI" \
+  grep -Fxq 'DocumentsUI' <<<"$REMOVE"
 
 assert_eq "first-party plugins include omadroid.home" "omadroid.home" \
   "$(omadroid_first_party_plugin_ids "$ROOT" | grep -Fx 'omadroid.home')"
@@ -228,8 +230,22 @@ done < <(omadroid_product_packages_remove)
 assert_eq "AndroidProducts.mk names the x86_64 product" "omadroid_x86_64.mk" \
   "$(grep -o 'omadroid_x86_64.mk' "$ROOT/device/AndroidProducts.mk" | head -1)"
 
+assert_eq "framework overlay uses DeviceDefault.NoActionBar" "Theme.DeviceDefault.NoActionBar" \
+  "$(grep -o 'Theme.DeviceDefault.NoActionBar' "$ROOT/device/overlay/frameworks/base/core/res/res/values/themes.xml" | head -1)"
+assert_eq "launcher theme hides action bar" "false" \
+  "$(grep windowActionBar "$ROOT/launcher/src/main/res/values/themes.xml" | sed 's/.*false.*/false/')"
+
 assert_eq "product includes OmadroidShell" "OmadroidShell" \
   "$(grep -o 'OmadroidShell' "$ROOT/omadroid.mk" | head -1)"
+
+assert_fail "empty log is not a launcher crash" \
+  omadroid_launcher_crash_in_log <<<"nothing here"
+if printf 'FATAL EXCEPTION: main\nProcess: com.omadroid.launcher\n' | omadroid_launcher_crash_in_log; then
+  printf 'ok  detects launcher fatal in crash buffer\n'
+else
+  printf 'not ok  detects launcher fatal in crash buffer\n' >&2
+  FAILS=$((FAILS + 1))
+fi
 
 STAGE="$(mktemp -d)"
 mkdir -p "${STAGE}/app" "${STAGE}/vendor"

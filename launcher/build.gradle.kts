@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application") version "9.3.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.10"
 }
 
 android {
@@ -20,6 +21,10 @@ android {
         }
     }
 
+    buildFeatures {
+        compose = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -36,5 +41,9 @@ android {
 }
 
 dependencies {
+    implementation("androidx.activity:activity-compose:1.10.1")
+    implementation("androidx.compose.foundation:foundation:1.8.2")
+    implementation("androidx.compose.runtime:runtime:1.8.2")
+    implementation("androidx.compose.ui:ui:1.8.2")
     testImplementation("junit:junit:4.13.2")
 }

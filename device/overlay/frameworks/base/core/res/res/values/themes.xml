@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Product RRO. Point the stock default theme at the public
+         NoActionBar variant so framework-res in the image has no bar. -->
+    <style name="Theme.DeviceDefault" parent="@android:style/Theme.DeviceDefault.NoActionBar" />
+</resources>

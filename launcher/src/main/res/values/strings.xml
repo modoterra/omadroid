@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Omadroid</string>
-    <string name="launcher_search">Search</string>
+    <string name="launcher_search">Command</string>
+    <string name="launcher_command">Command</string>
     <string name="dock_name">Dock</string>
     <string name="launcher_layout">Layout</string>
     <string name="launcher_menu">Menu</string>
@@ -18,5 +19,5 @@
     <string name="sheet_menu">Menu</string>
     <string name="sheet_appearance">Appearance</string>
     <string name="sheet_theme">Theme</string>
-    <string name="sheet_search_empty">Type to search</string>
+    <string name="sheet_search_empty">Type a command</string>
 </resources>

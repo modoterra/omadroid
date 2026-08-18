@@ -45,6 +45,19 @@ class MenuSpecTest {
     }
 
     @Test
+    fun filterKeepsMatchingTitles() {
+        val spec =
+            MenuSpec(
+                listOf(
+                    MenuSection("Apps", listOf(MenuItem("a", "Files"), MenuItem("b", "Settings"))),
+                    MenuSection("System", listOf(MenuItem("c", "Theme"))),
+                ),
+            )
+        val next = filterMenu(spec, "fi")
+        assertEquals(listOf("Files"), menuRows(next).map { it.title })
+    }
+
+    @Test
     fun selectedIsNotAToggle() {
         val item = MenuItem("tokyo-night", "Tokyo Night", selected = true)
         assertEquals(true, item.selected)

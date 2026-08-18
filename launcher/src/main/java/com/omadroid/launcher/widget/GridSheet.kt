@@ -5,81 +5,68 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import com.omadroid.launcher.NavRoute
 import com.omadroid.launcher.NavStack
 
 class GridSheet(
     context: Context,
-    private var style: GridStyle,
-) : LinearLayout(context), Node {
+    style: GridStyle,
+) : Stack(context, style, Direction.Vertical) {
     var stack: NavStack = NavStack()
         private set
 
     var render: (NavRoute) -> View = { _ -> View(context) }
     var onChanged: (NavStack) -> Unit = {}
 
-    private val host = NodeHost()
+    private val pages = NodeHost()
     private var page: Node? = null
-    private val header: GridRow
+    private val header: Stack
     private val titleView: GridText
     private val backButton: GridIconButton
-    private val body: FrameLayout
-
-    override val nodes: List<Node>
-        get() = host.nodes
+    private val body: GridPane
 
     val isOpen: Boolean
         get() = stack.isOpen && visibility == VISIBLE
 
     init {
-        orientation = VERTICAL
         setBackgroundColor(style.colors.background)
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
         overScrollMode = OVER_SCROLL_NEVER
         visibility = GONE
         header =
-            GridRow(context, style).apply {
+            Stack(context, style, Direction.Horizontal).apply {
                 contentDescription = "Sheet"
+                isClickable = true
+                setOnClickListener { popOrDismiss() }
+                setBackgroundColor(style.colors.lighterBackground)
             }
         backButton =
             GridIconButton(context, style).apply {
                 text = IconGlyphs.BACK
                 contentDescription = "Back"
+                isClickable = true
                 setOnClickListener { popOrDismiss() }
             }
-        header.add(backButton, gridCellParams(style))
+        header.add(backButton, Slot.square)
         titleView =
             GridText(context, style).apply {
                 gravity = Gravity.CENTER_VERTICAL or Gravity.START
             }
-        header.add(
-            titleView,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                style.innerPx,
-            ),
-        )
-        addView(
-            header,
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, style.cellPx),
-        )
-        host.add(header)
+        header.add(titleView, Slot.grow())
+        add(header, Slot.units(1))
         body =
-            FrameLayout(context).apply {
+            GridPane(context, style).apply {
                 setBackgroundColor(style.colors.background)
             }
-        addView(
-            body,
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f),
-        )
+        add(body, Slot.grow())
     }
 
     override fun style(next: GridStyle) {
-        style = next
+        super.style(next)
         setBackgroundColor(next.colors.background)
         body.setBackgroundColor(next.colors.background)
-        host.style(next)
+        header.setBackgroundColor(next.colors.lighterBackground)
+        pages.style(next)
         titleView.gravity = Gravity.CENTER_VERTICAL or Gravity.START
     }
 
@@ -158,12 +145,12 @@ class GridSheet(
         }
         titleView.text = route.title
         backButton.visibility = VISIBLE
-        page?.let { host.remove(it) }
+        page?.let { pages.remove(it) }
         page = null
         body.removeAllViews()
         val content = render(route)
         if (content is Node) {
-            host.add(content)
+            pages.add(content)
             page = content
         }
         body.addView(
