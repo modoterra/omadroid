@@ -484,14 +484,16 @@ internal fun commandFieldWidthPx(
 }
 
 internal fun menuSpec(context: Context, layout: LauncherLayout): MenuSpec {
+    val plugins = loadPluginApps(context)
     val apps =
-        launchableApps(context).map { app ->
-            MenuItem(
-                id = "${app.packageName}/${app.activityName}",
-                title = app.label,
-                icon = IconGlyphs.APP,
-            )
-        }
+        plugins.map { it.toMenuItem() } +
+            extraLaunchableApps(launchableApps(context), plugins).map { app ->
+                MenuItem(
+                    id = "${app.packageName}/${app.activityName}",
+                    title = app.label,
+                    icon = IconGlyphs.APP,
+                )
+            }
     return MenuSpec(
         listOf(
             MenuSection(

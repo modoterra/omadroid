@@ -75,8 +75,9 @@ fun builtinModules(): List<ModuleSpec> =
                         hint = "Layout",
                         keywords = listOf("desktop", "focus", "layout"),
                     )
-                val apps =
-                    launchableApps(scope.context).map { app ->
+                val plugins = loadPluginApps(scope.context)
+                val others =
+                    extraLaunchableApps(launchableApps(scope.context), plugins).map { app ->
                         CommandItem(
                             id = "${app.packageName}/${app.activityName}",
                             title = app.label,
@@ -86,7 +87,7 @@ fun builtinModules(): List<ModuleSpec> =
                             keywords = listOf(app.packageName),
                         )
                     }
-                listOf(focus) + apps
+                listOf(focus) + plugins.map { it.toCommand() } + others
             },
         ),
         ModuleSpec(

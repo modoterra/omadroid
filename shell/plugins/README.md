@@ -20,3 +20,7 @@ is the window manager. On Android, HOME is the desktop.
 The host that loads these manifests is `omadroid-shell`
 (`com.omadroid.shell`). It is HOME. It starts the `home` plugin
 (`OmadroidLauncher`). Launcher3 is omitted from the image.
+
+`OmadroidLauncher` also reads these manifests. Every non-`home` plugin
+registers a Command palette item under its plugin id and a row in the
+Menu Apps section.

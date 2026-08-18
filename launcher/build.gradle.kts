@@ -33,6 +33,7 @@ android {
     sourceSets.getByName("main") {
         kotlin.directories.add(layout.projectDirectory.dir("../shell/lib/theme").asFile.path)
         assets.directories.add(layout.projectDirectory.dir("../shell/themes").asFile.path)
+        assets.directories.add(layout.projectDirectory.dir("../shell/plugins").asFile.path)
     }
 
     testOptions {
@@ -46,4 +47,5 @@ dependencies {
     implementation("androidx.compose.runtime:runtime:1.8.2")
     implementation("androidx.compose.ui:ui:1.8.2")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
 }
