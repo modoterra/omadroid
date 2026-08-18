@@ -58,7 +58,7 @@ Boot the built product image instead of the workbench AVD:
 ./scripts/start.sh --product --aosp /path/to/aosp
 ```
 
-After `m OmadroidLauncher` or `m OmadroidShell`, push without rebuilding `super.img`:
+After `m OmadroidLauncher` or `m OmadroidShell`, push without rebuilding `super.img`. This also installs Contacts, Gallery, and Clock:
 
 ```bash
 ./scripts/sync-product.sh --aosp /path/to/aosp

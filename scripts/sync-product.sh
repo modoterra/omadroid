@@ -12,15 +12,17 @@ AOSP_ROOT="${AOSP_ROOT:-}"
 
 usage() {
   cat <<EOF
-Push OmadroidLauncher and OmadroidShell onto the running product guest.
+Push first-party Omadroid APKs onto the running product guest.
 
 Usage:
   sync-product.sh --aosp <aosp-root>
   AOSP_ROOT=<aosp-root> sync-product.sh
 
 Builds the Gradle HOME APK (Omadroid Compose), then pushes it and the
-Soong OmadroidShell APK. After m OmadroidShell, run this instead of
-rebuilding super.img. The overlay lasts until the guest reboots.
+Soong OmadroidShell APK. Also builds and installs Contacts, Gallery,
+and Clock so they appear in the HOME menu. After m OmadroidShell, run
+this instead of rebuilding super.img. The overlay lasts until the
+guest reboots. User-installed first-party apps persist on userdata.
 EOF
 }
 
@@ -50,10 +52,19 @@ ADB="${ANDROID_HOME}/platform-tools/adb"
 [[ -x "$ADB" ]] || omadroid_die "adb not installed. Run ${ROOT}/scripts/setup.sh first."
 
 "${ROOT}/scripts/build-launcher.sh" --aosp "$AOSP_ROOT"
+"${ROOT}/scripts/build-contacts.sh" --aosp "$AOSP_ROOT"
+"${ROOT}/scripts/build-gallery.sh" --aosp "$AOSP_ROOT"
+"${ROOT}/scripts/build-clock.sh" --aosp "$AOSP_ROOT"
 launcher_apk="${ROOT}/launcher/prebuilt/OmadroidLauncher.apk"
 shell_apk="${PRODUCT_OUT}/system_ext/priv-app/OmadroidShell/OmadroidShell.apk"
+contacts_apk="${ROOT}/apps/contacts/prebuilt/OmadroidContacts.apk"
+gallery_apk="${ROOT}/apps/gallery/prebuilt/OmadroidGallery.apk"
+clock_apk="${ROOT}/apps/clock/prebuilt/OmadroidClock.apk"
 [[ -f "$launcher_apk" ]] || omadroid_die "missing ${launcher_apk}; build-launcher.sh failed"
 [[ -f "$shell_apk" ]] || omadroid_die "missing ${shell_apk}; build OmadroidShell first"
+[[ -f "$contacts_apk" ]] || omadroid_die "missing ${contacts_apk}; build-contacts.sh failed"
+[[ -f "$gallery_apk" ]] || omadroid_die "missing ${gallery_apk}; build-gallery.sh failed"
+[[ -f "$clock_apk" ]] || omadroid_die "missing ${clock_apk}; build-clock.sh failed"
 
 if ! omadroid_wait_for_boot "$ADB" 60; then
   omadroid_die "guest never reached boot_completed"
@@ -73,6 +84,9 @@ fi
 
 "$ADB" push "$launcher_apk" /system_ext/priv-app/OmadroidLauncher/OmadroidLauncher.apk
 "$ADB" push "$shell_apk" /system_ext/priv-app/OmadroidShell/OmadroidShell.apk
+"$ADB" install -r -g "$contacts_apk"
+"$ADB" install -r -g "$gallery_apk"
+"$ADB" install -r -g "$clock_apk"
 "$ADB" logcat -c -b crash </dev/null || true
 "$ADB" shell am force-stop com.omadroid.launcher </dev/null
 "$ADB" shell am force-stop com.omadroid.shell </dev/null
@@ -82,4 +96,4 @@ if ! omadroid_check_home "$ADB"; then
   omadroid_die "HOME crashed or never resumed after push (logcat -b crash)"
 fi
 
-printf 'omadroid: pushed launcher and shell; HOME is up\n'
+printf 'omadroid: pushed launcher, shell, Contacts, Gallery, Clock; HOME is up\n'

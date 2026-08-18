@@ -14,7 +14,7 @@ Stock AOSP only: no Play Store, no Play services.
 - `./scripts/start.sh` boots the workbench. Windowed boots pass `-fixed-scale`.
 - `./scripts/start.sh --headless` boots without a window.
 - `./scripts/start.sh --product --aosp <tree>` boots the built `omadroid_x86_64` image.
-- `./scripts/sync-product.sh --aosp <tree>` Gradle-builds HOME, overlays `/system_ext`, pushes `OmadroidLauncher` and `OmadroidShell`, and fails if HOME crashes. Do not use `-writable-system` (grey screen). After any guest push, check `adb logcat -b crash` if something looks wrong.
+- `./scripts/sync-product.sh --aosp <tree>` Gradle-builds HOME, overlays `/system_ext`, pushes `OmadroidLauncher` and `OmadroidShell`, installs Contacts, Gallery, and Clock, and fails if HOME crashes. Do not use `-writable-system` (grey screen). After any guest push, check `adb logcat -b crash` if something looks wrong.
 - `./scripts/strip.sh` disables stock product apps for user 0 on the workbench image.
 - `./scripts/install-launcher.sh` builds `com.omadroid.launcher`, strips product apps, sets HOME, and disables Launcher3.
 - `./scripts/prepare-aosp.sh --aosp <tree>` links this repo into an AOSP checkout for `lunch omadroid_x86_64-aosp_current-userdebug`.

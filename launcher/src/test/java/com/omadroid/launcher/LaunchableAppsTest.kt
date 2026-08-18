@@ -21,4 +21,17 @@ class LaunchableAppsTest {
             visible.map { it.label },
         )
     }
+
+    @Test
+    fun firstPartyAppsStayVisible() {
+        val apps =
+            listOf(
+                LaunchableApp("com.omadroid.clock", "ClockActivity", "Clock"),
+                LaunchableApp("com.omadroid.contacts", "ContactsActivity", "Contacts"),
+                LaunchableApp("com.omadroid.gallery", "GalleryActivity", "Gallery"),
+                LaunchableApp("com.android.settings", "Settings", "Settings"),
+            )
+        val visible = visibleLaunchableApps(apps, "com.omadroid.launcher")
+        assertEquals(listOf("Clock", "Contacts", "Gallery"), visible.map { it.label })
+    }
 }
