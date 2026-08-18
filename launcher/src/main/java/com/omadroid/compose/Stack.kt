@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.omadroid.launcher.widget.GridStyle
 
 interface StackScope {
@@ -104,9 +103,6 @@ private class VerticalStackScope(
         Box(modifier = with(column) { columnModifier(slot, style) }, content = content)
     }
 }
-
-@Composable
-private fun GridStyle.spaceDp(): Dp = with(LocalDensity.current) { spacePx.toDp() }
 
 @Composable
 private fun GridStyle.unitsDp(count: Int): Dp = with(LocalDensity.current) { (count * unitPx).toDp() }

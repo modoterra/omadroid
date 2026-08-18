@@ -15,8 +15,10 @@ import androidx.compose.ui.layout.ContentScale
 import com.omadroid.launcher.widget.GridStyle
 
 /**
- * Omadroid Compose: a small Stack/Node API on Jetpack Compose Foundation.
- * Call [Compose] once at the Activity root. Do not import Material.
+ * Omadroid Compose. Call [Compose] once at the page root. Do not import Material.
+ *
+ * Layout: [Stack], [Node], [Slot], [Spacer].
+ * Chrome: [Text], [Glyph], [IconButton], [Input], [Chrome], [Cell], [Block], [Line], [Rule], [Page], [Empty], [Tiles], [Swatches].
  */
 val LocalGridStyle =
     staticCompositionLocalOf<GridStyle> {

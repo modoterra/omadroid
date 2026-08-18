@@ -2,17 +2,11 @@ package com.omadroid.gallery
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,19 +21,16 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import com.omadroid.compose.Cell
+import com.omadroid.compose.Chrome
 import com.omadroid.compose.Direction
-import com.omadroid.compose.IconButton
+import com.omadroid.compose.Empty
 import com.omadroid.compose.LocalGridStyle
-import com.omadroid.compose.NoFling
-import com.omadroid.compose.NoOverscroll
 import com.omadroid.compose.Slot
-import com.omadroid.compose.Spacer
 import com.omadroid.compose.Stack
 import com.omadroid.compose.Text
+import com.omadroid.compose.Tiles
 import com.omadroid.launcher.widget.IconGlyphs
 import java.time.ZoneId
 import java.util.Locale
@@ -58,74 +49,46 @@ fun GalleryApp(
 ) {
     val albums = remember(images) { MediaImages.albums(images) }
     when {
-            !permitted -> PermissionPane(onRequestPermission)
-            images.isEmpty() -> EmptyPane()
-            else ->
-                when (val route = nav.current) {
-                    is GalleryRoute.Library ->
-                        LibraryPane(
-                            albums = albums,
-                            canPop = nav.canPop,
-                            onBack = onBack,
-                            onOpenAlbum = onOpenAlbum,
-                            onOpenImage = onOpenImage,
-                        )
-                    is GalleryRoute.Album -> {
-                        val album = albums.firstOrNull { it.bucketId == route.bucketId }
-                        ImageGridPane(
-                            title = album?.name ?: MediaImages.UNCATEGORIZED,
-                            images = album?.images ?: emptyList(),
-                            canPop = nav.canPop,
-                            onBack = onBack,
-                            onOpenImage = onOpenImage,
-                        )
-                    }
-                    is GalleryRoute.Viewer -> {
-                        val image = MediaImages.find(images, route.imageId)
-                        ViewerPane(image = image, onBack = onBack)
-                    }
-                }
-    }
-}
-
-@Composable
-private fun PermissionPane(onRequestPermission: () -> Unit) {
-    val style = LocalGridStyle.current
-    Stack(Direction.Vertical) {
-        Spacer()
-        Node(Slot.fit) {
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Gallery needs access to photos", color = style.colors.foreground)
-            }
-        }
-        Node(Slot.units(1)) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onRequestPermission,
+        !permitted -> Empty(
+            message = "Gallery needs access to photos",
+            action = "Allow access",
+            onAction = onRequestPermission,
+        )
+        images.isEmpty() -> EmptyPane()
+        else ->
+            when (val route = nav.current) {
+                is GalleryRoute.Library ->
+                    LibraryPane(
+                        albums = albums,
+                        canPop = nav.canPop,
+                        onBack = onBack,
+                        onOpenAlbum = onOpenAlbum,
+                        onOpenImage = onOpenImage,
                     )
-                    .semantics { contentDescription = "Allow access" },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("Allow access", color = style.colors.accent, description = "Allow access")
+                is GalleryRoute.Album -> {
+                    val album = albums.firstOrNull { it.bucketId == route.bucketId }
+                    ImageGridPane(
+                        title = album?.name ?: MediaImages.UNCATEGORIZED,
+                        images = album?.images ?: emptyList(),
+                        canPop = nav.canPop,
+                        onBack = onBack,
+                        onOpenImage = onOpenImage,
+                    )
+                }
+                is GalleryRoute.Viewer -> {
+                    val image = MediaImages.find(images, route.imageId)
+                    ViewerPane(image = image, onBack = onBack)
+                }
             }
-        }
-        Spacer()
     }
 }
 
 @Composable
 private fun EmptyPane() {
-    val style = LocalGridStyle.current
-    Stack(Direction.Vertical) {
-        Node(Slot.units(1)) { ChromeBar("Photos", canPop = false, onBack = {}) }
+    Stack(Direction.Vertical, gap = false) {
+        Chrome("Photos")
         Node(Slot.grow()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No images", color = style.colors.muted)
-            }
+            Empty("No images")
         }
     }
 }
@@ -164,22 +127,15 @@ private fun AlbumGridPane(
     onBack: () -> Unit,
     onOpenAlbum: (Long) -> Unit,
 ) {
-    val style = LocalGridStyle.current
-    val density = LocalDensity.current
-    val space = with(density) { style.spacePx.toDp() }
-    val minCell = with(density) { (style.unitPx * 3).toDp() }
     Stack(Direction.Vertical, gap = false) {
-        Node(Slot.units(1)) { ChromeBar("Albums", canPop, onBack) }
+        Chrome(
+            title = "Albums",
+            leading = if (canPop) IconGlyphs.BACK else null,
+            leadingDescription = "Back",
+            onLeading = if (canPop) onBack else null,
+        )
         Node(Slot.grow()) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minCell),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(space),
-                horizontalArrangement = Arrangement.spacedBy(space),
-                verticalArrangement = Arrangement.spacedBy(space),
-                flingBehavior = NoFling,
-                overscrollEffect = NoOverscroll,
-            ) {
+            Tiles {
                 items(albums, key = { it.bucketId }) { album ->
                     AlbumCell(album, onClick = { onOpenAlbum(album.bucketId) })
                 }
@@ -196,24 +152,17 @@ private fun ImageGridPane(
     onBack: () -> Unit,
     onOpenImage: (Long) -> Unit,
 ) {
-    val style = LocalGridStyle.current
-    val density = LocalDensity.current
-    val space = with(density) { style.spacePx.toDp() }
-    val minCell = with(density) { (style.unitPx * 3).toDp() }
     val zone = remember { ZoneId.systemDefault() }
     val locale = remember { Locale.getDefault() }
     Stack(Direction.Vertical, gap = false) {
-        Node(Slot.units(1)) { ChromeBar(title, canPop, onBack) }
+        Chrome(
+            title = title,
+            leading = if (canPop) IconGlyphs.BACK else null,
+            leadingDescription = "Back",
+            onLeading = if (canPop) onBack else null,
+        )
         Node(Slot.grow()) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minCell),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(space),
-                horizontalArrangement = Arrangement.spacedBy(space),
-                verticalArrangement = Arrangement.spacedBy(space),
-                flingBehavior = NoFling,
-                overscrollEffect = NoOverscroll,
-            ) {
+            Tiles {
                 items(images, key = { it.id }) { image ->
                     val date = MediaImages.formatDate(image.dateTakenMillis, locale, zone)
                     ImageCell(
@@ -235,48 +184,27 @@ private fun ViewerPane(image: MediaImage?, onBack: () -> Unit) {
     val name = image?.displayName ?: MediaImages.UNTITLED
     val date = image?.let { MediaImages.formatDate(it.dateTakenMillis, locale, zone) }.orEmpty()
     Stack(Direction.Vertical, gap = false) {
-        Node(Slot.units(1)) { ChromeBar(name, canPop = true, onBack = onBack) }
+        Chrome(
+            title = name,
+            leading = IconGlyphs.BACK,
+            leadingDescription = "Back",
+            onLeading = onBack,
+        )
         Node(Slot.grow()) {
             if (image == null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(name, color = style.colors.muted)
-                }
+                Empty(name)
             } else {
                 FullImage(image.id, name)
             }
         }
         if (date.isNotEmpty()) {
             Node(Slot.units(1)) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(Color(style.colors.darkBackground)),
-                    contentAlignment = Alignment.Center,
+                Cell(
+                    modifier = Modifier.background(Color(style.colors.darkBackground)),
+                    align = Alignment.Center,
+                    description = date,
                 ) {
                     Text(date, color = style.colors.muted, description = date)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ChromeBar(title: String, canPop: Boolean, onBack: () -> Unit) {
-    val style = LocalGridStyle.current
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Color(style.colors.lighterBackground)),
-    ) {
-        Stack(Direction.Horizontal) {
-            if (canPop) {
-                Node(Slot.square) {
-                    IconButton(IconGlyphs.BACK, "Back", onClick = onBack)
-                }
-            }
-            Node(Slot.grow()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-                    Text(title, description = title, align = TextAlign.Start)
                 }
             }
         }
@@ -288,16 +216,10 @@ private fun AlbumCell(album: MediaAlbum, onClick: () -> Unit) {
     val style = LocalGridStyle.current
     val cover = album.cover
     val label = "${album.name} (${album.images.size})"
-    Box(
-        Modifier
-            .aspectRatio(1f)
-            .background(Color(style.colors.lighterBackground))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
-            .semantics { contentDescription = label },
+    Cell(
+        modifier = Modifier.aspectRatio(1f).background(Color(style.colors.lighterBackground)),
+        onClick = onClick,
+        description = label,
     ) {
         if (cover != null) {
             LoadedThumb(cover.id, album.name, Modifier.fillMaxSize())
@@ -317,17 +239,11 @@ private fun AlbumCell(album: MediaAlbum, onClick: () -> Unit) {
 @Composable
 private fun ImageCell(id: Long, label: String, onClick: () -> Unit) {
     val style = LocalGridStyle.current
-    Box(
-        Modifier
-            .aspectRatio(1f)
-            .background(Color(style.colors.lighterBackground))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
+    Cell(
+        modifier = Modifier.aspectRatio(1f).background(Color(style.colors.lighterBackground)),
+        align = Alignment.Center,
+        onClick = onClick,
+        description = label,
     ) {
         LoadedThumb(id, label, Modifier.fillMaxSize(), fallback = label)
     }

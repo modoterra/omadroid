@@ -12,6 +12,7 @@ val syncSharedUi by tasks.registering(Copy::class) {
             "com/omadroid/compose/Compose.kt",
             "com/omadroid/compose/Input.kt",
             "com/omadroid/compose/Overscroll.kt",
+            "com/omadroid/compose/Primitives.kt",
             "com/omadroid/compose/Slot.kt",
             "com/omadroid/compose/Stack.kt",
             "com/omadroid/compose/Widgets.kt",

@@ -4,16 +4,9 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,25 +19,26 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import com.omadroid.compose.Block
+import com.omadroid.compose.Cell
+import com.omadroid.compose.Chrome
 import com.omadroid.compose.Compose
 import com.omadroid.compose.Direction
+import com.omadroid.compose.Empty
 import com.omadroid.compose.Glyph
-import com.omadroid.compose.IconButton
 import com.omadroid.compose.Input
+import com.omadroid.compose.Line
 import com.omadroid.compose.LocalGridStyle
-import com.omadroid.compose.NoFling
-import com.omadroid.compose.NoOverscroll
+import com.omadroid.compose.Page
+import com.omadroid.compose.Rule
 import com.omadroid.compose.Slot
 import com.omadroid.compose.Stack
-import com.omadroid.compose.StackScope
 import com.omadroid.compose.Text
+import com.omadroid.compose.cellDp
+import com.omadroid.compose.spaceDp
 import com.omadroid.launcher.widget.GridStyle
 import com.omadroid.launcher.widget.IconGlyphs
 
@@ -116,7 +110,6 @@ private fun ListScreen(
     Stack(Direction.Vertical, gap = false) {
         Chrome(
             title = "Contacts",
-            leading = null,
             trailing = if (permitted) IconGlyphs.PLUS else null,
             trailingDescription = "Add",
             onTrailing = if (permitted) onAdd else null,
@@ -135,18 +128,18 @@ private fun ListScreen(
         Node(Slot.grow()) {
             when {
                 !permitted ->
-                    EmptyState(
+                    Empty(
                         message = "Contacts needs permission to read and write contacts.",
                         action = "Grant",
                         onAction = onRequestPermission,
                     )
                 contacts.isEmpty() ->
-                    EmptyState(
+                    Empty(
                         message = "No contacts",
                         action = "Add",
                         onAction = onAdd,
                     )
-                visible.isEmpty() -> EmptyState(message = "No matches")
+                visible.isEmpty() -> Empty(message = "No matches")
                 else -> ContactList(visible, onOpen)
             }
         }
@@ -173,43 +166,30 @@ private fun DetailScreen(
         )
         Node(Slot.grow()) {
             if (detail == null) {
-                EmptyState(message = "No contacts")
+                Empty(message = "No contacts")
             } else {
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState(), overscrollEffect = NoOverscroll, flingBehavior = NoFling),
-                ) {
-                    IdentityRow(detail.displayName, detail.photoUri)
+                Page {
+                    Block {
+                        IdentityRow(detail.displayName, detail.photoUri)
+                    }
                     if (detail.phones.isEmpty() && detail.emails.isEmpty()) {
-                        StatusRow("No phone or email")
+                        Line("No phone or email")
                     }
                     detail.phones.forEach { number ->
-                        InfoRow(IconGlyphs.PHONE, number)
+                        Block { InfoRow(IconGlyphs.PHONE, number) }
                     }
                     detail.emails.forEach { address ->
-                        InfoRow(IconGlyphs.ENVELOPE, address)
+                        Block { InfoRow(IconGlyphs.ENVELOPE, address) }
                     }
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(with(LocalDensity.current) { style.cellPx.toDp() })
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                onClick = onDelete,
-                            )
-                            .semantics { contentDescription = "Delete" },
-                        contentAlignment = Alignment.CenterStart,
-                    ) {
-                        Stack(Direction.Horizontal) {
+                    Block(onClick = onDelete, description = "Delete") {
+                        Stack(Direction.Horizontal, Modifier.height(style.cellDp())) {
                             Node(Slot.square) {
-                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Cell(align = Alignment.Center) {
                                     Glyph(IconGlyphs.TRASH, color = style.colors.red)
                                 }
                             }
                             Node(Slot.grow()) {
-                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
+                                Cell(description = "Delete") {
                                     Text("Delete", color = style.colors.red, description = "Delete")
                                 }
                             }
@@ -260,19 +240,18 @@ private fun EditScreen(
             )
         }
         Node(Slot.units(1)) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(with(LocalDensity.current) { style.spacePx.toDp() })
-                    .background(Color(if (valid) style.colors.accent else style.colors.lighterBackground))
-                    .clickable(
-                        enabled = valid,
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { onSave(name, phone) },
-                    )
-                    .semantics { contentDescription = "Save" },
-                contentAlignment = Alignment.Center,
+            Cell(
+                modifier =
+                    Modifier
+                        .padding(style.spaceDp())
+                        .background(Color(if (valid) style.colors.accent else style.colors.lighterBackground)),
+                align = Alignment.Center,
+                onClick = if (valid) {
+                    { onSave(name, phone) }
+                } else {
+                    null
+                },
+                description = "Save",
             ) {
                 Text(
                     "Save",
@@ -286,95 +265,39 @@ private fun EditScreen(
 }
 
 @Composable
-private fun StackScope.Chrome(
-    title: String,
-    leading: String?,
-    leadingDescription: String = "",
-    onLeading: (() -> Unit)? = null,
-    trailing: String? = null,
-    trailingDescription: String = "",
-    onTrailing: (() -> Unit)? = null,
-) {
-    val style = LocalGridStyle.current
-    Node(Slot.units(1)) {
-        Box(Modifier.fillMaxSize().background(Color(style.colors.lighterBackground))) {
-            Stack(Direction.Horizontal) {
-                if (leading != null && onLeading != null) {
-                    Node(Slot.square) {
-                        IconButton(leading, leadingDescription, onClick = onLeading)
-                    }
-                }
-                Node(Slot.grow()) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-                        Text(title, description = title, align = TextAlign.Start)
-                    }
-                }
-                if (trailing != null && onTrailing != null) {
-                    Node(Slot.square) {
-                        IconButton(trailing, trailingDescription, color = style.colors.accent, onClick = onTrailing)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun ContactList(
     contacts: List<ContactSummary>,
     onOpen: (Long) -> Unit,
 ) {
-    val style = LocalGridStyle.current
-    val density = LocalDensity.current
-    val row = with(density) { style.cellPx.toDp() }
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState(), overscrollEffect = NoOverscroll, flingBehavior = NoFling),
-    ) {
+    Page {
         contacts.forEachIndexed { index, contact ->
-            Box(
-                Modifier
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { onOpen(contact.id) },
-                    )
-                    .semantics { contentDescription = displayLabel(contact.displayName) },
-            ) {
-                ContactRow(contact, row)
+            val label = displayLabel(contact.displayName)
+            Block(onClick = { onOpen(contact.id) }, description = label) {
+                ContactRow(contact)
             }
             if (index < contacts.lastIndex) {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = with(density) { style.spacePx.toDp() })
-                        .height(1.dp)
-                        .background(Color(style.colors.muted).copy(alpha = 0.2f)),
-                )
+                Rule()
             }
         }
     }
 }
 
 @Composable
-private fun ContactRow(
-    contact: ContactSummary,
-    row: androidx.compose.ui.unit.Dp,
-) {
+private fun ContactRow(contact: ContactSummary) {
     val style = LocalGridStyle.current
-    Stack(Direction.Horizontal, Modifier.height(row)) {
+    val label = displayLabel(contact.displayName)
+    Stack(Direction.Horizontal, Modifier.height(style.cellDp())) {
         Node(Slot.square) {
             Avatar(contact.displayName, contact.photoUri)
         }
         Node(Slot.grow()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-                Text(displayLabel(contact.displayName), description = displayLabel(contact.displayName), align = TextAlign.Start)
+            Cell(description = label) {
+                Text(label, description = label, align = TextAlign.Start)
             }
         }
         if (!contact.phone.isNullOrBlank()) {
             Node(Slot.fit) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
+                Cell(align = Alignment.CenterEnd, description = contact.phone) {
                     Text(contact.phone, color = style.colors.muted, description = contact.phone, align = TextAlign.End)
                 }
             }
@@ -388,14 +311,14 @@ private fun IdentityRow(
     photoUri: String?,
 ) {
     val style = LocalGridStyle.current
-    val row = with(LocalDensity.current) { (style.cellPx * 2).toDp() }
-    Stack(Direction.Horizontal, Modifier.height(row)) {
+    val label = displayLabel(name)
+    Stack(Direction.Horizontal, Modifier.height(style.cellDp() * 2)) {
         Node(Slot.square) {
             Avatar(name, photoUri)
         }
         Node(Slot.grow()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-                Text(displayLabel(name), description = displayLabel(name), align = TextAlign.Start)
+            Cell(description = label) {
+                Text(label, description = label, align = TextAlign.Start)
             }
         }
     }
@@ -407,65 +330,15 @@ private fun InfoRow(
     value: String,
 ) {
     val style = LocalGridStyle.current
-    val row = with(LocalDensity.current) { style.cellPx.toDp() }
-    Stack(Direction.Horizontal, Modifier.height(row)) {
+    Stack(Direction.Horizontal, Modifier.height(style.cellDp())) {
         Node(Slot.square) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Cell(align = Alignment.Center) {
                 Glyph(glyph, color = style.colors.muted)
             }
         }
         Node(Slot.grow()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
+            Cell(description = value) {
                 Text(value, description = value, align = TextAlign.Start)
-            }
-        }
-    }
-}
-
-@Composable
-private fun StatusRow(message: String) {
-    val style = LocalGridStyle.current
-    val row = with(LocalDensity.current) { style.cellPx.toDp() }
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(row),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Text(message, color = style.colors.muted, description = message, align = TextAlign.Start)
-    }
-}
-
-@Composable
-private fun EmptyState(
-    message: String,
-    action: String? = null,
-    onAction: (() -> Unit)? = null,
-) {
-    val style = LocalGridStyle.current
-    Stack(Direction.Vertical) {
-        Node(Slot.grow()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(message, color = style.colors.muted, description = message)
-            }
-        }
-        if (action != null && onAction != null) {
-            Node(Slot.units(1)) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(with(LocalDensity.current) { style.spacePx.toDp() })
-                        .background(Color(style.colors.lighterBackground))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = onAction,
-                        )
-                        .semantics { contentDescription = action },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(action, color = style.colors.accent, description = action)
-                }
             }
         }
     }
@@ -478,12 +351,13 @@ private fun Avatar(
 ) {
     val style = LocalGridStyle.current
     val photo = rememberContactPhoto(photoUri)
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(with(LocalDensity.current) { style.spacePx.toDp() })
-            .background(Color(style.colors.lighterBackground)),
-        contentAlignment = Alignment.Center,
+    Cell(
+        modifier =
+            Modifier
+                .padding(style.spaceDp())
+                .background(Color(style.colors.lighterBackground)),
+        align = Alignment.Center,
+        description = displayLabel(name),
     ) {
         if (photo != null) {
             Image(
