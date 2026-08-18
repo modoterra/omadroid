@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gallery</string>
+    <string name="permission_needed">Gallery needs access to photos</string>
+    <string name="permission_action">Allow access</string>
+    <string name="empty_library">No images</string>
+    <string name="albums_title">Albums</string>
+    <string name="photos_title">Photos</string>
+    <string name="sheet_back">Back</string>
+</resources>

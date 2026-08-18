@@ -5,6 +5,9 @@
 /launcher/.gradle/
 /launcher/build/
 /launcher/local.properties
+/apps/*/.gradle/
+/apps/*/build/
+/apps/*/local.properties
 /shell/.gradle/
 /shell/build/
 /shell/local.properties

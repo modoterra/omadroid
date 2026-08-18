@@ -216,6 +216,10 @@ assert_fail "product does not remove DocumentsUI" \
 
 assert_eq "first-party plugins include omadroid.home" "omadroid.home" \
   "$(omadroid_first_party_plugin_ids "$ROOT" | grep -Fx 'omadroid.home')"
+assert_eq "first-party plugins include omadroid.contacts" "omadroid.contacts" \
+  "$(omadroid_first_party_plugin_ids "$ROOT" | grep -Fx 'omadroid.contacts')"
+assert_eq "first-party plugins include omadroid.gallery" "omadroid.gallery" \
+  "$(omadroid_first_party_plugin_ids "$ROOT" | grep -Fx 'omadroid.gallery')"
 
 while IFS= read -r module || [[ -n "$module" ]]; do
   [[ -n "$module" ]] || continue

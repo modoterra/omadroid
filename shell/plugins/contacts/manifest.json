@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "omadroid.contacts",
+  "name": "Contacts",
+  "version": "0.1.0",
+  "kinds": ["contacts"],
+  "package": "com.omadroid.contacts",
+  "entryPoints": {
+    "contacts": "com.omadroid.contacts/.ContactsActivity"
+  },
+  "soongModule": "OmadroidContacts"
+}

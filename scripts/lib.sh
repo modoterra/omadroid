@@ -24,9 +24,13 @@ omadroid_stage_soong_app() {
     cp -f "${root}/${name}/Android.bp" "${dest}/Android.bp"
   fi
   ln -sfn "${root}/${name}/src" "${dest}/src"
-  if [[ -f "${root}/${name}/prebuilt/OmadroidLauncher.apk" ]]; then
+  if [[ -d "${root}/${name}/prebuilt" ]]; then
     mkdir -p "${dest}/prebuilt"
-    cp -f "${root}/${name}/prebuilt/OmadroidLauncher.apk" "${dest}/prebuilt/OmadroidLauncher.apk"
+    local apk
+    for apk in "${root}/${name}/prebuilt"/*.apk; do
+      [[ -f "$apk" ]] || continue
+      cp -f "$apk" "${dest}/prebuilt/$(basename "$apk")"
+    done
   fi
 }
 

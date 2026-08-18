@@ -1,0 +1,18 @@
+// Product module is the Gradle-built APK (Omadroid Compose / Jetpack Foundation).
+// Run `cd apps/contacts && ./gradlew assembleDebug` so prebuilt/OmadroidContacts.apk exists.
+//
+// https://source.android.com/docs/setup/build/building
+
+android_app_import {
+    name: "OmadroidContacts",
+    apk: "prebuilt/OmadroidContacts.apk",
+    certificate: "platform",
+    system_ext_specific: true,
+    presigned: false,
+    overrides: [
+        "Contacts",
+    ],
+    dex_preopt: {
+        enabled: false,
+    },
+}

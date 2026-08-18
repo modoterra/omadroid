@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Contacts</string>
+    <string name="contacts_search">Search</string>
+    <string name="contacts_add">Add</string>
+    <string name="contacts_edit">Edit</string>
+    <string name="contacts_delete">Delete</string>
+    <string name="contacts_save">Save</string>
+    <string name="contacts_grant">Grant</string>
+    <string name="contacts_name">Name</string>
+    <string name="contacts_phone">Phone</string>
+    <string name="contacts_back">Back</string>
+    <string name="contacts_permission">Contacts needs permission to read and write contacts.</string>
+    <string name="contacts_empty">No contacts</string>
+    <string name="contacts_no_matches">No matches</string>
+    <string name="contacts_unnamed">Unnamed</string>
+</resources>

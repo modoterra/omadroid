@@ -5,7 +5,9 @@ OMADROID_DIR := vendor/modoterra/omadroid
 
 PRODUCT_PACKAGES += \
     OmadroidLauncher \
-    OmadroidShell
+    OmadroidShell \
+    OmadroidContacts \
+    OmadroidGallery
 
 # Do not filter-out PRODUCT_PACKAGES here. inherit-product stores
 # goldfish entries as inherit tags; filter-out never sees Gallery2.

@@ -66,6 +66,12 @@ ln -sfn "${ROOT}/device" "${vendor_dir}/device"
 # Real app dirs so Soong finds Android.bp without ALLOW_BP_UNDER_SYMLINKS.
 omadroid_stage_soong_app "$ROOT" "$vendor_dir" launcher
 omadroid_stage_soong_app "$ROOT" "$vendor_dir" shell
+if [[ -f "${ROOT}/apps/contacts/Android.bp" ]]; then
+  omadroid_stage_soong_app "$ROOT" "$vendor_dir" apps/contacts
+fi
+if [[ -f "${ROOT}/apps/gallery/Android.bp" ]]; then
+  omadroid_stage_soong_app "$ROOT" "$vendor_dir" apps/gallery
+fi
 if [[ -d "${ROOT}/shell/plugins" ]]; then
   ln -sfn "${ROOT}/shell/plugins" "${vendor_dir}/shell/plugins"
 fi

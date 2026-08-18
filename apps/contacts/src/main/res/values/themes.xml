@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Omadroid.Contacts" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/contacts_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:colorBackground">@color/contacts_background</item>
+        <item name="android:fontFamily">@font/jetbrains_mono_nerd</item>
+        <item name="android:typeface">normal</item>
+        <item name="android:overScrollMode">never</item>
+    </style>
+</resources>

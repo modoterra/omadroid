@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "omadroid.gallery",
+  "name": "Gallery",
+  "version": "0.1.0",
+  "kinds": ["gallery"],
+  "package": "com.omadroid.gallery",
+  "entryPoints": {
+    "gallery": "com.omadroid.gallery/.GalleryActivity"
+  },
+  "soongModule": "OmadroidGallery"
+}
