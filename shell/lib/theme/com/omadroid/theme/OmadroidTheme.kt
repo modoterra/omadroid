@@ -23,13 +23,18 @@ object OmadroidTheme {
     }
 
     fun slug(context: Context): String {
-        return try {
-            context.contentResolver.query(uri(), arrayOf(COLUMN_SLUG), null, null, null)?.use { cursor ->
-                if (cursor.moveToFirst()) cursor.getString(0) else null
+        val fromProvider =
+            try {
+                context.contentResolver.query(uri(), arrayOf(COLUMN_SLUG), null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) cursor.getString(0) else null
+                }
+            } catch (_: Exception) {
+                null
             }
-        } catch (_: Exception) {
-            null
-        }.let { normalizeSlug(it) }
+        if (!fromProvider.isNullOrBlank()) {
+            return normalizeSlug(fromProvider)
+        }
+        return normalizeSlug(readPrefs(context))
     }
 
     fun load(context: Context, assets: AssetManager = context.assets): ThemeColors {
@@ -42,9 +47,28 @@ object OmadroidTheme {
     }
 
     fun save(context: Context, slug: String) {
-        val values = ContentValues().apply { put(COLUMN_SLUG, normalizeSlug(slug)) }
-        context.contentResolver.update(uri(), values, null, null)
+        val normalized = normalizeSlug(slug)
+        writePrefs(context, normalized)
+        val values = ContentValues().apply { put(COLUMN_SLUG, normalized) }
+        try {
+            context.contentResolver.update(uri(), values, null, null)
+        } catch (_: IllegalArgumentException) {
+            try {
+                context.contentResolver.notifyChange(uri(), null)
+            } catch (_: Exception) {
+            }
+        }
     }
+
+    fun readPrefs(context: Context): String? =
+        prefs(context).getString(PREF_SLUG, null)
+
+    fun writePrefs(context: Context, slug: String) {
+        prefs(context).edit().putString(PREF_SLUG, normalizeSlug(slug)).apply()
+    }
+
+    private fun prefs(context: Context) =
+        context.createDeviceProtectedStorageContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun observe(context: Context, onChange: () -> Unit): ContentObserver {
         val observer =
