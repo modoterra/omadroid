@@ -7,14 +7,22 @@ import android.graphics.Canvas
 import android.os.Process
 import android.os.UserHandle
 import android.view.View
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer as Flex
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,7 +46,7 @@ import androidx.compose.ui.semantics.semantics
 import com.omadroid.compose.Compose
 import com.omadroid.compose.Direction
 import com.omadroid.compose.Glyph
-import com.omadroid.compose.Input
+import com.omadroid.compose.InputWell
 import com.omadroid.compose.IconButton
 import com.omadroid.compose.CommandList
 import com.omadroid.compose.Menu
@@ -388,44 +396,91 @@ private fun Dock(
 ) {
     val context = LocalContext.current
     val style = com.omadroid.compose.LocalGridStyle.current
+    val density = LocalDensity.current
+    val gap = with(density) { style.spacePx.toDp() }
+    val commandLabel = context.getString(R.string.launcher_command)
     Box(
         Modifier
             .fillMaxSize()
             .background(Color(style.colors.lighterBackground).copy(alpha = 0.86f))
             .semantics { contentDescription = context.getString(R.string.dock_name) },
     ) {
-        Stack(Direction.Horizontal, gap = true, pad = false) {
-            Input(
-                value = query,
-                onValueChange = onQuery,
-                hint = context.getString(R.string.launcher_command),
-                slot = Slot.grow(),
-                icon = IconGlyphs.COMMAND,
-                accent = false,
-                autoFocus = commandOpen,
-                onFocus = onCommandOpen,
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val cell = maxHeight
+            val target =
+                with(density) {
+                    commandFieldWidthPx(
+                        open = commandOpen,
+                        dockWidthPx = constraints.maxWidth,
+                        cellPx = style.cellPx,
+                        spacePx = style.spacePx,
+                    ).toDp()
+                }
+            val commandWidth by animateDpAsState(
+                targetValue = target,
+                animationSpec = tween(180),
+                label = "command-field",
             )
-            Node(Slot.square) {
-                IconButton(
-                    IconGlyphs.LAYOUT,
-                    if (layout == LauncherLayout.Focus) {
-                        context.getString(R.string.launcher_layout_focus)
-                    } else {
-                        context.getString(R.string.launcher_layout_desktop)
-                    },
-                    color = if (layout == LauncherLayout.Focus) style.colors.accent else style.colors.foreground,
-                    onClick = onLayout,
-                )
-            }
-            Node(Slot.square) {
-                IconButton(
-                    IconGlyphs.MENU,
-                    context.getString(R.string.launcher_menu),
-                    onClick = onOpenMenu,
-                )
+            val expand by animateFloatAsState(
+                targetValue = if (commandOpen) 1f else 0f,
+                animationSpec = tween(180),
+                label = "command-well",
+            )
+            Row(Modifier.fillMaxSize()) {
+                Box(
+                    Modifier
+                        .width(commandWidth)
+                        .fillMaxHeight()
+                        .clipToBounds(),
+                ) {
+                    InputWell(
+                        value = query,
+                        onValueChange = onQuery,
+                        icon = IconGlyphs.COMMAND,
+                        accent = false,
+                        autoFocus = commandOpen,
+                        expanded = expand > 0.02f,
+                        description = commandLabel,
+                        wellAlpha = expand,
+                        onClick = if (commandOpen) null else onCommandOpen,
+                        onFocus = onCommandOpen,
+                    )
+                }
+                Flex(Modifier.width(gap))
+                Flex(Modifier.weight(1f))
+                Box(Modifier.size(cell)) {
+                    IconButton(
+                        IconGlyphs.LAYOUT,
+                        if (layout == LauncherLayout.Focus) {
+                            context.getString(R.string.launcher_layout_focus)
+                        } else {
+                            context.getString(R.string.launcher_layout_desktop)
+                        },
+                        color = if (layout == LauncherLayout.Focus) style.colors.accent else style.colors.foreground,
+                        onClick = onLayout,
+                    )
+                }
+                Flex(Modifier.width(gap))
+                Box(Modifier.size(cell)) {
+                    IconButton(
+                        IconGlyphs.MENU,
+                        context.getString(R.string.launcher_menu),
+                        onClick = onOpenMenu,
+                    )
+                }
             }
         }
     }
+}
+
+internal fun commandFieldWidthPx(
+    open: Boolean,
+    dockWidthPx: Int,
+    cellPx: Int,
+    spacePx: Int,
+): Int {
+    val expanded = (dockWidthPx - 2 * cellPx - 2 * spacePx).coerceAtLeast(cellPx)
+    return if (open) expanded else cellPx
 }
 
 internal fun menuSpec(context: Context, layout: LauncherLayout): MenuSpec {

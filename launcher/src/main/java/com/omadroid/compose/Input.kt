@@ -45,12 +45,49 @@ import com.omadroid.launcher.widget.IconGlyphs
 fun StackScope.Input(
     value: String,
     onValueChange: (String) -> Unit,
-    hint: String,
+    hint: String = "",
     slot: Slot = Slot.grow(),
     icon: String? = null,
     accent: Boolean = true,
     readOnly: Boolean = false,
     autoFocus: Boolean = false,
+    expanded: Boolean = true,
+    description: String = hint,
+    onClick: (() -> Unit)? = null,
+    onFocus: (() -> Unit)? = null,
+    onSubmit: (() -> Unit)? = null,
+) {
+    Node(slot) {
+        InputWell(
+            value = value,
+            onValueChange = onValueChange,
+            hint = hint,
+            icon = icon,
+            accent = accent,
+            readOnly = readOnly,
+            autoFocus = autoFocus,
+            expanded = expanded,
+            description = description,
+            onClick = onClick,
+            onFocus = onFocus,
+            onSubmit = onSubmit,
+        )
+    }
+}
+
+@Composable
+fun InputWell(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    hint: String = "",
+    icon: String? = null,
+    accent: Boolean = true,
+    readOnly: Boolean = false,
+    autoFocus: Boolean = false,
+    expanded: Boolean = true,
+    description: String = hint,
+    wellAlpha: Float = 1f,
     onClick: (() -> Unit)? = null,
     onFocus: (() -> Unit)? = null,
     onSubmit: (() -> Unit)? = null,
@@ -91,61 +128,65 @@ fun StackScope.Input(
             textAlign = TextAlign.Start,
         )
     val hintStyle = textStyle.copy(color = Color(style.colors.muted))
-    Node(slot) {
-        CompositionLocalProvider(LocalTextSelectionColors provides selection) {
-            Box(
+    val label = description.ifEmpty { hint }
+    CompositionLocalProvider(LocalTextSelectionColors provides selection) {
+        Box(
+            modifier
+                .fillMaxSize()
+                .background(Color(style.colors.darkBackground).copy(alpha = wellAlpha))
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onClick,
+                        )
+                    } else {
+                        Modifier
+                    },
+                )
+                .then(if (label.isNotEmpty()) Modifier.semantics { contentDescription = label } else Modifier),
+        ) {
+            if (accent) {
+                Box(
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .fillMaxHeight()
+                        .width(inset)
+                        .background(Color(style.colors.accent).copy(alpha = railAlpha)),
+                )
+            }
+            Row(
                 Modifier
                     .fillMaxSize()
-                    .background(Color(style.colors.darkBackground))
-                    .then(
-                        if (onClick != null) {
-                            Modifier.clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                onClick = onClick,
-                            )
-                        } else {
-                            Modifier
-                        },
-                    )
-                    .semantics { contentDescription = hint },
+                    .padding(inset),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(inset),
             ) {
-                if (accent) {
+                if (icon != null) {
                     Box(
-                        Modifier
-                            .align(Alignment.CenterStart)
-                            .fillMaxHeight()
-                            .width(inset)
-                            .background(Color(style.colors.accent).copy(alpha = railAlpha)),
-                    )
-                }
-                Row(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(inset),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(inset),
-                ) {
-                    if (icon != null) {
-                        Box(
-                            Modifier.size(iconBox),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Glyph(
-                                icon,
-                                color = if (active) style.colors.accent else style.colors.muted,
-                            )
-                        }
+                        Modifier.size(iconBox),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Glyph(
+                            icon,
+                            color = if (active || autoFocus) style.colors.accent else style.colors.muted,
+                        )
                     }
+                }
+                if (expanded) {
                     Box(
                         Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart,
                     ) {
                         if (readOnly) {
-                            BasicText(
-                                text = value.ifEmpty { hint },
-                                style = if (value.isEmpty()) hintStyle else textStyle,
-                            )
+                            val shown = value.ifEmpty { hint }
+                            if (shown.isNotEmpty()) {
+                                BasicText(
+                                    text = shown,
+                                    style = if (value.isEmpty()) hintStyle else textStyle,
+                                )
+                            }
                         } else {
                             BasicTextField(
                                 value = value,
@@ -166,7 +207,7 @@ fun StackScope.Input(
                                 cursorBrush = SolidColor(Color(style.colors.accent)),
                                 interactionSource = interaction,
                                 decorationBox = { inner ->
-                                    if (value.isEmpty()) {
+                                    if (value.isEmpty() && hint.isNotEmpty()) {
                                         BasicText(text = hint, style = hintStyle)
                                     }
                                     inner()
