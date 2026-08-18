@@ -81,6 +81,9 @@ fun Home(
     state: HomeState,
     onLayout: () -> Unit,
     onSelectWorkspace: (String) -> Unit,
+    onCycleWorkspaceLayout: () -> Unit,
+    onClientClick: (WorkspaceClient) -> Unit,
+    onFocusWorkspacePage: (Int) -> Unit,
     onCommand: (String) -> Unit,
     onCommandOpen: () -> Unit,
     onCommandDismiss: () -> Unit,
@@ -117,7 +120,7 @@ fun Home(
             ) {
                 Stack(Direction.Vertical, gap = false) {
                     Node(Slot.units(1)) {
-                        Bar(state, onSelectWorkspace)
+                        Bar(state, onSelectWorkspace, onCycleWorkspaceLayout)
                     }
                     Node(Slot.grow()) {
                         Box(
@@ -130,7 +133,13 @@ fun Home(
                                             state.workspaces.active.name,
                                         )
                                 },
-                        )
+                        ) {
+                            ActiveWorkspace(
+                                workspace = state.workspaces.active,
+                                onClientClick = onClientClick,
+                                onFocusPage = onFocusWorkspacePage,
+                            )
+                        }
                     }
                     Node(Slot.units(1)) {
                         Dock(
@@ -187,6 +196,7 @@ fun Home(
 private fun Bar(
     state: HomeState,
     onSelectWorkspace: (String) -> Unit,
+    onCycleWorkspaceLayout: () -> Unit,
 ) {
     val context = LocalContext.current
     val arranged = arrangeBar(composeBarPlacements(builtinModules(), defaultBarPlacements))
@@ -198,6 +208,24 @@ private fun Bar(
     ) {
         BarAnchor.entries.forEach { anchor ->
             Anchor(anchor, arranged.getValue(anchor), state, onSelectWorkspace)
+        }
+        val layoutLabel =
+            when (state.workspaces.active.layout) {
+                WorkspaceLayout.Dwindle -> context.getString(R.string.workspace_layout_dwindle)
+                WorkspaceLayout.Scrolling -> context.getString(R.string.workspace_layout_scrolling)
+            }
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onCycleWorkspaceLayout,
+                    )
+                    .semantics { contentDescription = layoutLabel },
+            ) {
+                Text(layoutLabel, color = state.style.colors.muted)
+            }
         }
     }
 }

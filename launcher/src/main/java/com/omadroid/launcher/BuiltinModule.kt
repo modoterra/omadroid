@@ -23,7 +23,29 @@ fun builtinModules(): List<ModuleSpec> =
         ModuleSpec(BuiltinModule.Grid),
         ModuleSpec(BuiltinModule.Widgets),
         ModuleSpec(BuiltinModule.Bar),
-        ModuleSpec(BuiltinModule.Workspaces),
+        ModuleSpec(
+            BuiltinModule.Workspaces,
+            commands = { scope ->
+                listOf(
+                    CommandItem(
+                        id = ITEM_DWINDLE,
+                        title = scope.context.getString(R.string.workspace_layout_dwindle),
+                        module = BuiltinModule.Workspaces.id,
+                        icon = IconGlyphs.LAYOUT,
+                        hint = "Workspace",
+                        keywords = listOf("dwindle", "tile", "split", "layout"),
+                    ),
+                    CommandItem(
+                        id = ITEM_SCROLLING,
+                        title = scope.context.getString(R.string.workspace_layout_scrolling),
+                        module = BuiltinModule.Workspaces.id,
+                        icon = IconGlyphs.LAYOUT,
+                        hint = "Workspace",
+                        keywords = listOf("scrolling", "pager", "swipe", "layout"),
+                    ),
+                )
+            },
+        ),
         ModuleSpec(
             BuiltinModule.WorkspaceSwitcher,
             barPlacements =

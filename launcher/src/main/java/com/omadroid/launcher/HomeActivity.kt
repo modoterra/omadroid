@@ -35,6 +35,7 @@ class HomeActivity : ComponentActivity() {
     private var themeListY by mutableIntStateOf(0)
     private var layout by mutableStateOf(LauncherLayout.Desktop)
     private var workspaces by mutableStateOf(defaultWorkspaces())
+    private var clientSeq: Int = 0
     private var sheet by mutableStateOf(NavStack())
     private var commandOpen by mutableStateOf(false)
     private var commandQuery by mutableStateOf("")
@@ -96,6 +97,15 @@ class HomeActivity : ComponentActivity() {
                 onSelectWorkspace = { id ->
                     workspaces = workspaces.select(id)
                 },
+                onCycleWorkspaceLayout = {
+                    workspaces = workspaces.cycleLayout()
+                },
+                onClientClick = { client ->
+                    startLaunchable(this, client.launchId)
+                },
+                onFocusWorkspacePage = { index ->
+                    workspaces = workspaces.focusPage(index)
+                },
                 onCommand = { text ->
                     commandQuery = text
                     commandOpen = true
@@ -112,7 +122,7 @@ class HomeActivity : ComponentActivity() {
                     dismissCommand()
                     when {
                         item.id == ROUTE_THEME -> openSheet(themeRoute())
-                        startLaunchable(this, item.id) -> sheet = NavStack()
+                        launchIntoWorkspace(item.id, item.title) -> sheet = NavStack()
                     }
                 },
                 onCommandClick = { item ->
@@ -126,9 +136,13 @@ class HomeActivity : ComponentActivity() {
                                 } else {
                                     LauncherLayout.Focus
                                 }
+                        item.id == ITEM_DWINDLE ->
+                            workspaces = workspaces.setLayout(WorkspaceLayout.Dwindle)
+                        item.id == ITEM_SCROLLING ->
+                            workspaces = workspaces.setLayout(WorkspaceLayout.Scrolling)
                         item.id.startsWith("workspace/") ->
                             workspaces = workspaces.select(item.id.removePrefix("workspace/"))
-                        startLaunchable(this, item.id) -> sheet = NavStack()
+                        launchIntoWorkspace(item.id, item.title) -> sheet = NavStack()
                     }
                 },
                 onMenuToggle = { item, on ->
@@ -221,6 +235,22 @@ class HomeActivity : ComponentActivity() {
     private fun dismissCommand() {
         commandOpen = false
         commandQuery = ""
+    }
+
+    private fun launchIntoWorkspace(launchId: String, title: String): Boolean {
+        if (!startLaunchable(this, launchId)) {
+            return false
+        }
+        clientSeq += 1
+        workspaces =
+            workspaces.addClient(
+                WorkspaceClient(
+                    id = "c$clientSeq",
+                    title = title,
+                    launchId = launchId,
+                ),
+            )
+        return true
     }
 
     private fun menuRoute(): NavRoute =
