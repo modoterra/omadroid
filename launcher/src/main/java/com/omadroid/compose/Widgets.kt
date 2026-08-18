@@ -34,9 +34,10 @@ fun Text(
     color: Int? = null,
     description: String = text,
     align: TextAlign = TextAlign.Center,
+    sizePx: Int? = null,
 ) {
     val style = LocalGridStyle.current
-    val size = with(LocalDensity.current) { style.textSizePx.toSp() }
+    val size = with(LocalDensity.current) { (sizePx ?: style.textSizePx).toSp() }
     BasicText(
         text = text,
         modifier =
