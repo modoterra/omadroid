@@ -21,4 +21,8 @@ data class GridStyle(
     val chromeBlurPx: Int = (unitPx / 2).coerceAtLeast(1)
     /** Theme fill over that blur. 1f is a solid theme plate. */
     val chromeFillAlpha: Float = 0.9f
+    /** Blur radius for wallpaper under the Command palette. */
+    val commandBlurPx: Int = unitPx.coerceAtLeast(1)
+    /** Theme fill over that Command blur. */
+    val commandFillAlpha: Float = 0.55f
 }

@@ -179,6 +179,8 @@ fun Home(
             CommandPalette(
                 open = state.commandOpen,
                 query = state.commandQuery,
+                wallpaper = wallpaper,
+                screenHeight = screenHeight,
                 onDismiss = onCommandDismiss,
                 onItemClick = onCommandClick,
             )
@@ -374,6 +376,8 @@ private fun BarModuleView(
 private fun CommandPalette(
     open: Boolean,
     query: String,
+    wallpaper: ImageBitmap?,
+    screenHeight: Dp,
     onDismiss: () -> Unit,
     onItemClick: (CommandItem) -> Unit,
 ) {
@@ -391,12 +395,13 @@ private fun CommandPalette(
     }
     val dock = with(density) { style.unitPx.toDp() }
     val items = fuzzySearch(OmadroidCommand.registered(context), query)
+    val canBlur = Build.VERSION.SDK_INT >= 31 && wallpaper != null && style.commandBlurPx > 0
     Box(
         Modifier
             .fillMaxSize()
             .padding(bottom = dock)
+            .clipToBounds()
             .graphicsLayer { this.alpha = alpha }
-            .background(Color(style.colors.background).copy(alpha = 0.94f))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -406,6 +411,28 @@ private fun CommandPalette(
                 },
             ),
     ) {
+        if (canBlur) {
+            Image(
+                bitmap = wallpaper,
+                contentDescription = null,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(screenHeight)
+                        .align(Alignment.TopCenter)
+                        .blur(with(density) { style.commandBlurPx.toDp() }),
+                contentScale = ContentScale.Crop,
+            )
+        }
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Color(style.colors.background).copy(
+                        alpha = if (canBlur) style.commandFillAlpha else 0.94f,
+                    ),
+                ),
+        )
         CommandList(items = items, onItemClick = onItemClick)
     }
 }
