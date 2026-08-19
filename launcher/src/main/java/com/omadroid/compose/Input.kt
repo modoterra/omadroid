@@ -115,10 +115,13 @@ fun InputWell(
     )
     val requester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
-    LaunchedEffect(autoFocus) {
-        if (autoFocus) {
-            requester.requestFocus()
-        } else {
+    LaunchedEffect(autoFocus, expanded) {
+        if (shouldRequestInputFocus(autoFocus, expanded)) {
+            try {
+                requester.requestFocus()
+            } catch (_: IllegalStateException) {
+            }
+        } else if (!autoFocus) {
             focusManager.clearFocus(force = true)
         }
     }
@@ -248,3 +251,7 @@ fun InputWell(
         }
     }
 }
+
+internal fun shouldRequestInputFocus(autoFocus: Boolean, expanded: Boolean): Boolean =
+    autoFocus && expanded
+
