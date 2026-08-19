@@ -236,24 +236,16 @@ private fun Bar(
 }
 
 @Composable
-private fun ChromePlate(
+private fun FrostedBackdrop(
     wallpaper: ImageBitmap?,
     screenHeight: Dp,
     align: Alignment,
-    description: String,
-    content: @Composable BoxScope.() -> Unit,
 ) {
     val style = LocalGridStyle.current
     val density = LocalDensity.current
-    val canBlur = Build.VERSION.SDK_INT >= 31 && style.chromeBlurPx > 0
-    val fill = Color(style.colors.lighterBackground)
-    Box(
-        Modifier
-            .fillMaxSize()
-            .clipToBounds()
-            .semantics { contentDescription = description },
-    ) {
-        if (wallpaper != null && canBlur) {
+    val canBlur = Build.VERSION.SDK_INT >= 31 && wallpaper != null && style.chromeBlurPx > 0
+    Box(Modifier.fillMaxSize()) {
+        if (canBlur) {
             Image(
                 bitmap = wallpaper,
                 contentDescription = null,
@@ -269,8 +261,30 @@ private fun ChromePlate(
         Box(
             Modifier
                 .fillMaxSize()
-                .background(fill.copy(alpha = if (canBlur) style.chromeFillAlpha else 1f)),
+                .background(
+                    Color(style.colors.background).copy(
+                        alpha = if (canBlur) style.chromeFillAlpha else 0.94f,
+                    ),
+                ),
         )
+    }
+}
+
+@Composable
+private fun ChromePlate(
+    wallpaper: ImageBitmap?,
+    screenHeight: Dp,
+    align: Alignment,
+    description: String,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .semantics { contentDescription = description },
+    ) {
+        FrostedBackdrop(wallpaper, screenHeight, align)
         content()
     }
 }
@@ -395,7 +409,6 @@ private fun CommandPalette(
     }
     val dock = with(density) { style.unitPx.toDp() }
     val items = fuzzySearch(OmadroidCommand.registered(context), query)
-    val canBlur = Build.VERSION.SDK_INT >= 31 && wallpaper != null && style.commandBlurPx > 0
     Box(
         Modifier
             .fillMaxSize()
@@ -411,28 +424,7 @@ private fun CommandPalette(
                 },
             ),
     ) {
-        if (canBlur) {
-            Image(
-                bitmap = wallpaper,
-                contentDescription = null,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(screenHeight)
-                        .align(Alignment.TopCenter)
-                        .blur(with(density) { style.commandBlurPx.toDp() }),
-                contentScale = ContentScale.Crop,
-            )
-        }
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(
-                    Color(style.colors.background).copy(
-                        alpha = if (canBlur) style.commandFillAlpha else 0.94f,
-                    ),
-                ),
-        )
+        FrostedBackdrop(wallpaper, screenHeight, Alignment.TopCenter)
         CommandList(items = items, onItemClick = onItemClick)
     }
 }

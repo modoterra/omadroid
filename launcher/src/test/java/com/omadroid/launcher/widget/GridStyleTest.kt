@@ -20,12 +20,8 @@ class GridStyleTest {
         assertTrue(style.captionSizePx < style.textSizePx)
         assertEquals(style.textSizePx, style.iconPx)
         assertEquals(8, style.workspaceInsetPx)
-        assertEquals(16, style.chromeBlurPx)
-        assertEquals(0.9f, style.chromeFillAlpha)
-        assertEquals(32, style.commandBlurPx)
-        assertEquals(0.55f, style.commandFillAlpha)
-        assertTrue(style.commandBlurPx > style.chromeBlurPx)
-        assertTrue(style.commandFillAlpha < style.chromeFillAlpha)
+        assertEquals(32, style.chromeBlurPx)
+        assertEquals(0.55f, style.chromeFillAlpha)
     }
 
     @Test
@@ -34,6 +30,7 @@ class GridStyleTest {
         assertEquals(8, style.spacePx)
         assertEquals(48, style.innerPx)
         assertEquals(style.spacePx * 2 + style.innerPx, style.cellPx)
+        assertEquals(64, style.chromeBlurPx)
     }
 
     private fun stubColors(): ThemeColors =

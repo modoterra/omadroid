@@ -18,7 +18,7 @@ The Command palette lists `OmadroidCommand` entries. Plugins register those from
 One unit is a square. Every pad and margin is the same length
 (`spacePx` = unit/8). Workspace inset, chrome blur, and chrome fill
 are on `GridStyle` (`workspaceInsetPx`, `chromeBlurPx`,
-`chromeFillAlpha`). Corners are square. The unit length is still
+`chromeFillAlpha`). Bar, dock, and Command share that frost. Corners are square. The unit length is still
 TBD (`UNIT_DP`). The Grid gives leftover pixels to the Fill slot.
 
 A module may contribute placements to another module. The workspace
