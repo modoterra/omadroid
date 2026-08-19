@@ -39,4 +39,27 @@ class CommandTest {
             )
         assertEquals(listOf("a", "b"), fuzzySearch(items, "").map { it.id })
     }
+
+    @Test
+    fun registeredCommandsAreOnlyPluginEntries() {
+        val plugins =
+            listOf(
+                parsePlugin("clock"),
+                parsePlugin("contacts"),
+                parsePlugin("gallery"),
+            )
+        val items = OmadroidCommand.registered(plugins)
+        assertEquals(
+            listOf(
+                "com.omadroid.clock/com.omadroid.clock.ClockActivity",
+                "com.omadroid.contacts/com.omadroid.contacts.ContactsActivity",
+                "com.omadroid.gallery/com.omadroid.gallery.GalleryActivity",
+            ),
+            items.map { it.id },
+        )
+        assertTrue(items.none { it.id == ITEM_FOCUS || it.id == ROUTE_THEME || it.id.startsWith("workspace/") })
+    }
+
+    private fun parsePlugin(name: String): PluginApp =
+        parsePluginApp(java.io.File("../shell/plugins/$name/manifest.json").readText())
 }

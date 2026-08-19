@@ -10,10 +10,10 @@ userland and load through `omadroid-shell`.
 | Bar | `omadroid.bar` | Top chrome. One unit tall. Left, Center, and Right anchors. |
 | Workspaces | `omadroid.workspaces` | Fill slot between the bars. Will tile inside its allocated units. |
 | Workspace switcher | `omadroid.workspace-switcher` | Selects the active workspace. Mounts a switcher on the Bar (Left). |
-| Dock | `omadroid.dock` | Bottom chrome. One unit tall. Command field, layout, menu. Registers Focus and leftover launchable-app commands. First-party plugins register themselves. |
-| Sheet | `omadroid.sheet` | Screen that slides in from the left over the full viewport. Stack push/pop. Registers Theme. |
+| Dock | `omadroid.dock` | Bottom chrome. One unit tall. Command field, layout, menu. |
+| Sheet | `omadroid.sheet` | Screen that slides in from the left over the full viewport. Stack push/pop. |
 
-Modules register `CommandItem`s on `ModuleSpec.commands`. The dock Command palette fuzzy-searches that list. The workspace switcher registers each workspace.
+The Command palette lists `OmadroidCommand` entries. Plugins register those from their manifests. Chrome (workspaces, layout, theme) does not.
 
 One unit is a square. Every pad and margin is the same length
 (`spacePx` = unit/8). Workspace inset, chrome blur, and chrome fill

@@ -1,8 +1,5 @@
 package com.omadroid.launcher
 
-internal const val ITEM_DWINDLE = "dwindle"
-internal const val ITEM_SCROLLING = "scrolling"
-
 enum class WorkspaceLayout {
     Dwindle,
     Scrolling,

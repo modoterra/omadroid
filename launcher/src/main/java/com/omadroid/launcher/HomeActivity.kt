@@ -127,22 +127,8 @@ class HomeActivity : ComponentActivity() {
                 },
                 onCommandClick = { item ->
                     dismissCommand()
-                    when {
-                        item.id == ROUTE_THEME -> openSheet(themeRoute())
-                        item.id == ITEM_FOCUS ->
-                            layout =
-                                if (layout == LauncherLayout.Focus) {
-                                    LauncherLayout.Desktop
-                                } else {
-                                    LauncherLayout.Focus
-                                }
-                        item.id == ITEM_DWINDLE ->
-                            workspaces = workspaces.setLayout(WorkspaceLayout.Dwindle)
-                        item.id == ITEM_SCROLLING ->
-                            workspaces = workspaces.setLayout(WorkspaceLayout.Scrolling)
-                        item.id.startsWith("workspace/") ->
-                            workspaces = workspaces.select(item.id.removePrefix("workspace/"))
-                        launchIntoWorkspace(item.id, item.title) -> sheet = NavStack()
+                    if (launchIntoWorkspace(item.id, item.title)) {
+                        sheet = NavStack()
                     }
                 },
                 onMenuToggle = { item, on ->

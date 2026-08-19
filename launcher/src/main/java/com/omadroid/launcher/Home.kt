@@ -179,8 +179,6 @@ fun Home(
             CommandPalette(
                 open = state.commandOpen,
                 query = state.commandQuery,
-                layout = state.layout,
-                workspaces = state.workspaces,
                 onDismiss = onCommandDismiss,
                 onItemClick = onCommandClick,
             )
@@ -376,8 +374,6 @@ private fun BarModuleView(
 private fun CommandPalette(
     open: Boolean,
     query: String,
-    layout: LauncherLayout,
-    workspaces: Workspaces,
     onDismiss: () -> Unit,
     onItemClick: (CommandItem) -> Unit,
 ) {
@@ -394,14 +390,7 @@ private fun CommandPalette(
         return
     }
     val dock = with(density) { style.unitPx.toDp() }
-    val items =
-        fuzzySearch(
-            collectCommands(
-                builtinModules(),
-                CommandScope(context, layout, workspaces),
-            ),
-            query,
-        )
+    val items = fuzzySearch(OmadroidCommand.registered(context), query)
     Box(
         Modifier
             .fillMaxSize()

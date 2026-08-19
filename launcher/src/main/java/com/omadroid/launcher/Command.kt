@@ -11,16 +11,12 @@ data class CommandItem(
     val keywords: List<String> = emptyList(),
 )
 
-data class CommandScope(
-    val context: Context,
-    val layout: LauncherLayout,
-    val workspaces: Workspaces,
-)
+/** Commands plugins register. Chrome (workspaces, layout, theme) stays out. */
+object OmadroidCommand {
+    fun registered(context: Context): List<CommandItem> = registered(loadPluginApps(context))
 
-fun collectCommands(
-    modules: List<ModuleSpec>,
-    scope: CommandScope,
-): List<CommandItem> = modules.flatMap { it.commands(scope) }
+    fun registered(plugins: List<PluginApp>): List<CommandItem> = plugins.map { it.toCommand() }
+}
 
 fun fuzzyScore(text: String, query: String): Int? {
     if (query.isEmpty()) {
