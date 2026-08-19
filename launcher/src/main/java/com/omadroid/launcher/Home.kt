@@ -126,7 +126,8 @@ fun Home(
     }
     Compose(state.style, wallpaper = wallpaper) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
-            val screenHeight = maxHeight
+            val screenWidthPx = constraints.maxWidth
+            val screenHeightPx = constraints.maxHeight
             val backScale = 1f - sheetProgress.value * (1f - SHEET_BACK_SCALE)
             Box(
                 Modifier
@@ -138,7 +139,7 @@ fun Home(
             ) {
                 Stack(Direction.Vertical, gap = false) {
                     Node(Slot.units(1)) {
-                        Bar(state, wallpaper, screenHeight, onSelectWorkspace)
+                        Bar(state, wallpaper, screenWidthPx, screenHeightPx, onSelectWorkspace)
                     }
                     Node(Slot.grow()) {
                         val inset = with(LocalDensity.current) { state.style.workspaceInsetPx.toDp() }
@@ -167,7 +168,8 @@ fun Home(
                             query = state.commandQuery,
                             commandOpen = state.commandOpen,
                             wallpaper = wallpaper,
-                            screenHeight = screenHeight,
+                            screenWidthPx = screenWidthPx,
+                            screenHeightPx = screenHeightPx,
                             onQuery = onCommand,
                             onCommandOpen = onCommandOpen,
                             onCycleWorkspaceLayout = onCycleWorkspaceLayout,
@@ -180,7 +182,8 @@ fun Home(
                 open = state.commandOpen,
                 query = state.commandQuery,
                 wallpaper = wallpaper,
-                screenHeight = screenHeight,
+                screenWidthPx = screenWidthPx,
+                screenHeightPx = screenHeightPx,
                 onDismiss = onCommandDismiss,
                 onItemClick = onCommandClick,
             )
@@ -218,15 +221,17 @@ fun Home(
 private fun Bar(
     state: HomeState,
     wallpaper: ImageBitmap?,
-    screenHeight: Dp,
+    screenWidthPx: Int,
+    screenHeightPx: Int,
     onSelectWorkspace: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val arranged = arrangeBar(composeBarPlacements(builtinModules(), defaultBarPlacements))
     ChromePlate(
         wallpaper = wallpaper,
-        screenHeight = screenHeight,
-        align = Alignment.TopCenter,
+        screenWidthPx = screenWidthPx,
+        screenHeightPx = screenHeightPx,
+        edge = WallpaperStripEdge.Top,
         description = context.getString(R.string.bar_name),
     ) {
         BarAnchor.entries.forEach { anchor ->
@@ -238,36 +243,42 @@ private fun Bar(
 @Composable
 private fun FrostedBackdrop(
     wallpaper: ImageBitmap?,
-    screenHeight: Dp,
-    align: Alignment,
+    screenWidthPx: Int,
+    screenHeightPx: Int,
+    edge: WallpaperStripEdge,
 ) {
     val style = LocalGridStyle.current
     val density = LocalDensity.current
     val canBlur = Build.VERSION.SDK_INT >= 31 && wallpaper != null && style.chromeBlurPx > 0
-    // Clip the matching wallpaper strip first, then blur. Blurring the
-    // full image first smears center pixels into the bar and dock.
-    Box(
-        Modifier
-            .fillMaxSize()
-            .then(
-                if (canBlur) {
-                    Modifier.blur(with(density) { style.chromeBlurPx.toDp() })
-                } else {
-                    Modifier
-                },
-            )
-            .clipToBounds(),
-    ) {
-        if (wallpaper != null) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val stripHeightPx = constraints.maxHeight.coerceAtLeast(1)
+        val strip =
+            remember(wallpaper, screenWidthPx, screenHeightPx, stripHeightPx, edge) {
+                wallpaper?.let { bitmap ->
+                    displayedWallpaperStrip(
+                        bitmap,
+                        screenWidthPx,
+                        screenHeightPx,
+                        wallpaperStripTopPx(edge, screenHeightPx, stripHeightPx),
+                        stripHeightPx,
+                    )
+                }
+            }
+        if (strip != null) {
             Image(
-                bitmap = wallpaper,
+                bitmap = strip,
                 contentDescription = null,
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .height(screenHeight)
-                        .align(align),
-                contentScale = ContentScale.Crop,
+                        .fillMaxSize()
+                        .then(
+                            if (canBlur) {
+                                Modifier.blur(with(density) { style.chromeBlurPx.toDp() })
+                            } else {
+                                Modifier
+                            },
+                        ),
+                contentScale = ContentScale.FillBounds,
             )
         }
         Box(
@@ -285,8 +296,9 @@ private fun FrostedBackdrop(
 @Composable
 private fun ChromePlate(
     wallpaper: ImageBitmap?,
-    screenHeight: Dp,
-    align: Alignment,
+    screenWidthPx: Int,
+    screenHeightPx: Int,
+    edge: WallpaperStripEdge,
     description: String,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -296,7 +308,7 @@ private fun ChromePlate(
             .clipToBounds()
             .semantics { contentDescription = description },
     ) {
-        FrostedBackdrop(wallpaper, screenHeight, align)
+        FrostedBackdrop(wallpaper, screenWidthPx, screenHeightPx, edge)
         content()
     }
 }
@@ -403,7 +415,8 @@ private fun CommandPalette(
     open: Boolean,
     query: String,
     wallpaper: ImageBitmap?,
-    screenHeight: Dp,
+    screenWidthPx: Int,
+    screenHeightPx: Int,
     onDismiss: () -> Unit,
     onItemClick: (CommandItem) -> Unit,
 ) {
@@ -436,7 +449,7 @@ private fun CommandPalette(
                 },
             ),
     ) {
-        FrostedBackdrop(wallpaper, screenHeight, Alignment.TopCenter)
+        FrostedBackdrop(wallpaper, screenWidthPx, screenHeightPx, WallpaperStripEdge.Top)
         CommandList(items = items, onItemClick = onItemClick)
     }
 }
@@ -447,7 +460,8 @@ private fun Dock(
     query: String,
     commandOpen: Boolean,
     wallpaper: ImageBitmap?,
-    screenHeight: Dp,
+    screenWidthPx: Int,
+    screenHeightPx: Int,
     onQuery: (String) -> Unit,
     onCommandOpen: () -> Unit,
     onCycleWorkspaceLayout: () -> Unit,
@@ -465,8 +479,9 @@ private fun Dock(
         }
     ChromePlate(
         wallpaper = wallpaper,
-        screenHeight = screenHeight,
-        align = Alignment.BottomCenter,
+        screenWidthPx = screenWidthPx,
+        screenHeightPx = screenHeightPx,
+        edge = WallpaperStripEdge.Bottom,
         description = context.getString(R.string.dock_name),
     ) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
