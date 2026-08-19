@@ -244,8 +244,21 @@ private fun FrostedBackdrop(
     val style = LocalGridStyle.current
     val density = LocalDensity.current
     val canBlur = Build.VERSION.SDK_INT >= 31 && wallpaper != null && style.chromeBlurPx > 0
-    Box(Modifier.fillMaxSize()) {
-        if (canBlur) {
+    // Clip the matching wallpaper strip first, then blur. Blurring the
+    // full image first smears center pixels into the bar and dock.
+    Box(
+        Modifier
+            .fillMaxSize()
+            .then(
+                if (canBlur) {
+                    Modifier.blur(with(density) { style.chromeBlurPx.toDp() })
+                } else {
+                    Modifier
+                },
+            )
+            .clipToBounds(),
+    ) {
+        if (wallpaper != null) {
             Image(
                 bitmap = wallpaper,
                 contentDescription = null,
@@ -253,8 +266,7 @@ private fun FrostedBackdrop(
                     Modifier
                         .fillMaxWidth()
                         .height(screenHeight)
-                        .align(align)
-                        .blur(with(density) { style.chromeBlurPx.toDp() }),
+                        .align(align),
                 contentScale = ContentScale.Crop,
             )
         }
