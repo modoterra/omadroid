@@ -1,6 +1,7 @@
 package com.omadroid.launcher
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.horizontalScroll
@@ -19,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
@@ -44,7 +47,8 @@ internal fun ActiveWorkspace(
     onFocusPage: (Int) -> Unit,
 ) {
     when (workspace.layout) {
-        WorkspaceLayout.Dwindle -> DwindleWorkspace(workspace.clients, onClientClick)
+        WorkspaceLayout.Dwindle ->
+            DwindleWorkspace(workspace.clients, workspace.focusedClientId(), onClientClick)
         WorkspaceLayout.Scrolling ->
             key(workspace.id) {
                 ScrollingWorkspace(workspace, onClientClick, onFocusPage)
@@ -55,22 +59,28 @@ internal fun ActiveWorkspace(
 @Composable
 private fun DwindleWorkspace(
     clients: List<WorkspaceClient>,
+    focusedId: String?,
     onClientClick: (WorkspaceClient) -> Unit,
 ) {
     val tree = dwindleTree(clients.map { it.id }) ?: return
-    DwindleBranch(tree, clients.associateBy { it.id }, onClientClick)
+    DwindleBranch(tree, clients.associateBy { it.id }, focusedId, onClientClick)
 }
 
 @Composable
 private fun DwindleBranch(
     node: DwindleNode,
     byId: Map<String, WorkspaceClient>,
+    focusedId: String?,
     onClientClick: (WorkspaceClient) -> Unit,
 ) {
     when (node) {
         is DwindleNode.Leaf -> {
             val client = byId[node.id] ?: return
-            WorkspaceTile(client, onSelect = { onClientClick(client) })
+            WorkspaceTile(
+                client,
+                focused = client.id == focusedId,
+                onSelect = { onClientClick(client) },
+            )
         }
         is DwindleNode.Split -> {
             val direction =
@@ -81,10 +91,10 @@ private fun DwindleBranch(
                 }
             Stack(direction, gap = true, pad = false) {
                 Node(Slot.grow()) {
-                    DwindleBranch(node.first, byId, onClientClick)
+                    DwindleBranch(node.first, byId, focusedId, onClientClick)
                 }
                 Node(Slot.grow()) {
-                    DwindleBranch(node.second, byId, onClientClick)
+                    DwindleBranch(node.second, byId, focusedId, onClientClick)
                 }
             }
         }
@@ -134,7 +144,11 @@ private fun ScrollingWorkspace(
                         .width(pageDp)
                         .fillMaxHeight(),
                 ) {
-                    WorkspaceTile(client, onSelect = { onClientClick(client) })
+                    WorkspaceTile(
+                        client,
+                        focused = client.id == workspace.focusedClientId(),
+                        onSelect = { onClientClick(client) },
+                    )
                 }
             }
         }
@@ -181,15 +195,29 @@ private fun ScrollingWorkspace(
 @Composable
 private fun WorkspaceTile(
     client: WorkspaceClient,
+    focused: Boolean,
     modifier: Modifier = Modifier,
     onSelect: () -> Unit,
 ) {
     val style = LocalGridStyle.current
     val hosted = hostedPackage(client.launchId)
+    val border = Color(if (focused) style.colors.activeBorder else style.colors.inactiveBorder)
+    val width = with(LocalDensity.current) { style.windowBorderPx.toDp() }
     Box(
         modifier
             .fillMaxSize()
+            .border(width, border)
             .background(Color(style.colors.background))
+            .pointerInput(client.id) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.changes.any { it.changedToDown() }) {
+                            onSelect()
+                        }
+                    }
+                }
+            }
             .semantics { contentDescription = client.title },
     ) {
         when (hosted) {

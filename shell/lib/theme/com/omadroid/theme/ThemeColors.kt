@@ -24,6 +24,8 @@ data class ThemeColors(
     val blue: Int,
     val magenta: Int,
     val brown: Int,
+    val activeBorder: Int,
+    val inactiveBorder: Int,
 ) {
     fun previewSwatches(): List<Int> =
         listOf(background, foreground, accent, red, yellow, green, cyan, blue, magenta)
@@ -39,18 +41,20 @@ data class ThemeColors(
             }
             val background = required("background")
             val foreground = required("foreground")
+            val accent = required("accent")
+            val muted = required("muted")
             return ThemeColors(
                 slug = slug,
                 mode = values["mode"] ?: "dark",
-                accent = required("accent"),
+                accent = accent,
                 selection = optional("selection", required("lighter_background")),
-                muted = required("muted"),
+                muted = muted,
                 background = background,
                 darkBackground = optional("dark_background", background),
                 darkerBackground = optional("darker_background", background),
                 lighterBackground = required("lighter_background"),
                 foreground = foreground,
-                darkForeground = optional("dark_foreground", required("muted")),
+                darkForeground = optional("dark_foreground", muted),
                 lightForeground = optional("light_foreground", foreground),
                 brightForeground = optional("bright_foreground", foreground),
                 red = required("red"),
@@ -61,20 +65,51 @@ data class ThemeColors(
                 blue = required("blue"),
                 magenta = required("magenta"),
                 brown = optional("brown", required("red")),
+                activeBorder =
+                    optionalBorder(values, "active_border_color")
+                        ?: optionalBorder(values, "hyprland_active_border")
+                        ?: accent,
+                inactiveBorder = optionalBorder(values, "hyprland_inactive_border") ?: muted,
             )
         }
 
         fun parseHex(key: String, raw: String): Int {
             val hex = raw.removePrefix("#")
-            val rgb = when (hex.length) {
-                6 -> "FF$hex"
-                8 -> hex
-                else -> throw ThemeColorsException("$key is not a hex color: $raw")
-            }
+            val rgb =
+                when (hex.length) {
+                    6 -> "FF$hex"
+                    8 -> hex
+                    else -> throw ThemeColorsException("$key is not a hex color: $raw")
+                }
             return try {
                 rgb.toLong(16).toInt()
             } catch (_: NumberFormatException) {
                 throw ThemeColorsException("$key is not a hex color: $raw")
+            }
+        }
+
+        fun parseColorToken(key: String, raw: String): Int {
+            val token = raw.trim().split(Regex("\\s+")).firstOrNull { it.isNotEmpty() } ?: raw
+            return when {
+                token.startsWith("rgba(", ignoreCase = true) && token.endsWith(")") -> {
+                    val inner = token.substring(5, token.length - 1)
+                    if (inner.length != 8) {
+                        throw ThemeColorsException("$key is not a hex color: $raw")
+                    }
+                    parseHex(key, inner.substring(6, 8) + inner.substring(0, 6))
+                }
+                token.startsWith("rgb(", ignoreCase = true) && token.endsWith(")") ->
+                    parseHex(key, token.substring(4, token.length - 1))
+                else -> parseHex(key, token)
+            }
+        }
+
+        private fun optionalBorder(values: Map<String, String>, key: String): Int? {
+            val raw = values[key] ?: return null
+            return try {
+                parseColorToken(key, raw)
+            } catch (_: ThemeColorsException) {
+                null
             }
         }
 

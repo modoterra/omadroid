@@ -158,4 +158,6 @@ private fun placeholderTheme(): ThemeColors =
         blue = 0xFF7AA2F7.toInt(),
         magenta = 0xFFAD8EE6.toInt(),
         brown = 0xFF75493D.toInt(),
+        activeBorder = 0xFF7AA2F7.toInt(),
+        inactiveBorder = 0xFF414868.toInt(),
     )

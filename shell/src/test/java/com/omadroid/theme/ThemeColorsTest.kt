@@ -16,6 +16,8 @@ class ThemeColorsTest {
         assertEquals(0xFFA9B1D6.toInt(), theme.foreground)
         assertEquals(0xFF7AA2F7.toInt(), theme.accent)
         assertEquals(0xFF414868.toInt(), theme.muted)
+        assertEquals(theme.accent, theme.activeBorder)
+        assertEquals(theme.muted, theme.inactiveBorder)
     }
 
     @Test
@@ -46,6 +48,33 @@ class ThemeColorsTest {
     fun displayNameTitleCasesSlug() {
         assertEquals("Tokyo Night", ThemeCatalog.displayName("tokyo-night"))
         assertEquals("Catppuccin Latte", ThemeCatalog.displayName("catppuccin-latte"))
+    }
+
+    @Test
+    fun readsOmarchyWindowBorders() {
+        val theme =
+            ThemeColors.parse(
+                "last-horizon",
+                """
+                mode = "dark"
+                accent = "#b59790"
+                muted = "#584e51"
+                background = "#0c0b0c"
+                lighter_background = "#0c0b0c"
+                foreground = "#FAFCFB"
+                red = "#c38b7b"
+                yellow = "#6B5E73"
+                green = "#87a9b0"
+                cyan = "#a5a0b6"
+                blue = "#b59790"
+                magenta = "#c4d8e2"
+                hyprland_active_border = "rgba(8a8588ee) rgba(e2dddcee)"
+                hyprland_inactive_border = "rgba(584e51aa)"
+                active_border_color = "#d6d3de"
+                """.trimIndent(),
+            )
+        assertEquals(0xFFD6D3DE.toInt(), theme.activeBorder)
+        assertEquals(0xAA584E51.toInt(), theme.inactiveBorder)
     }
 
     @Test

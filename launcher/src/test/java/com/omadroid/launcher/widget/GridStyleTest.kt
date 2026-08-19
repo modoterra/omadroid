@@ -22,6 +22,7 @@ class GridStyleTest {
         assertEquals(8, style.workspaceInsetPx)
         assertEquals(32, style.chromeBlurPx)
         assertEquals(0.55f, style.chromeFillAlpha)
+        assertEquals(2, style.windowBorderPx)
     }
 
     @Test

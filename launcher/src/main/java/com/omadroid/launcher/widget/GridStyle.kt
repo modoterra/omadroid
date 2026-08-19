@@ -21,4 +21,6 @@ data class GridStyle(
     val chromeBlurPx: Int = unitPx.coerceAtLeast(1)
     /** Theme wash over that blur. 1f is a solid theme plate. */
     val chromeFillAlpha: Float = 0.55f
+    /** Hyprland-style window outline. */
+    val windowBorderPx: Int = (unitPx * 2 / UNIT_DP).coerceAtLeast(1)
 }

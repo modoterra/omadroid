@@ -90,6 +90,13 @@ fun visibleWorkspaces(workspaces: Workspaces, layout: LauncherLayout): List<Work
         LauncherLayout.Focus -> listOf(workspaces.active)
     }
 
+fun Workspace.focusedClientId(): String? {
+    if (clients.isEmpty()) {
+        return null
+    }
+    return clients.getOrNull(clampScrollIndex(focusedIndex, clients.size))?.id
+}
+
 fun clampScrollIndex(index: Int, count: Int): Int {
     if (count <= 0) {
         return 0

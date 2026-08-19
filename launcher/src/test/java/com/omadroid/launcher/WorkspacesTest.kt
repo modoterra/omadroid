@@ -73,4 +73,14 @@ class WorkspacesTest {
         assertEquals(2, next.active.clients.size)
         assertEquals(0, next.items.first { it.id == "2" }.focusedIndex)
     }
+
+    @Test
+    fun focusedClientFollowsTheIndex() {
+        val next =
+            defaultWorkspaces()
+                .addClient(WorkspaceClient("a", "A", "p/a"))
+                .addClient(WorkspaceClient("b", "B", "p/b"))
+        assertEquals("b", next.active.focusedClientId())
+        assertEquals("a", next.focusPage(0).active.focusedClientId())
+    }
 }

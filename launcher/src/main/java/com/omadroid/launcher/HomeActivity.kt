@@ -322,4 +322,6 @@ private fun placeholderTheme(): ThemeColors =
         blue = 0,
         magenta = 0,
         brown = 0,
+        activeBorder = 0,
+        inactiveBorder = 0,
     )
