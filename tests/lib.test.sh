@@ -243,6 +243,10 @@ assert_eq "launcher theme hides action bar" "false" \
 
 assert_eq "product includes OmadroidShell" "OmadroidShell" \
   "$(grep -o 'OmadroidShell' "$ROOT/omadroid.mk" | head -1)"
+assert_eq "launcher privapp allowlists SCHEDULE_EXACT_ALARM" "android.permission.SCHEDULE_EXACT_ALARM" \
+  "$(grep -o 'android.permission.SCHEDULE_EXACT_ALARM' "$ROOT/device/privapp-permissions-omadroid.xml" | head -1)"
+assert_eq "launcher privapp allowlists USE_EXACT_ALARM" "android.permission.USE_EXACT_ALARM" \
+  "$(grep -o 'android.permission.USE_EXACT_ALARM' "$ROOT/device/privapp-permissions-omadroid.xml" | head -1)"
 
 assert_fail "empty log is not a launcher crash" \
   omadroid_launcher_crash_in_log <<<"nothing here"
